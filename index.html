@@ -85,6 +85,12 @@
   code{font-family:"SF Mono",Menlo,Consolas,monospace;}
   pre .c{color:#7a7a95;} pre .s{color:#a5d6a7;} pre .k{color:#82aaff;}
   pre .n{color:#f78c6c;} pre .f{color:#ffd43b;} pre .o{color:#dcdcec;}
+  .fiche .obj{background:#16233a; border-left:4px solid var(--accent2); border-radius:8px;
+    padding:10px 12px; font-size:14px; line-height:1.5; margin:12px 0;}
+  .fiche .obj ul, ul.resume{margin:8px 0 2px 0; padding-left:20px;}
+  .fiche .obj li, ul.resume li{margin-bottom:6px; line-height:1.5;}
+  ul.resume{font-size:14.5px; color:#dcdcec;}
+  ul.resume li::marker{color:var(--accent);}
   .dots{display:flex; gap:6px; justify-content:center; margin:16px 0 4px 0;}
   .dots i{width:8px; height:8px; border-radius:99px; background:#3c3c58;}
   .dots i.on{background:var(--accent);}
@@ -119,6 +125,44 @@
   .result .score{font-size:17px; color:var(--muted); margin:8px 0 4px 0;}
   .result .gain{color:var(--accent); font-weight:800; font-size:18px; margin-bottom:10px;}
 
+  /* ===== Pop-up info & bouton i ===== */
+  .info-btn{width:30px; height:30px; border-radius:99px; border:1px solid #3c3c58;
+    background:var(--card2); color:var(--muted); font-weight:800; font-style:italic;
+    font-family:Georgia,"Times New Roman",serif; flex-shrink:0; cursor:pointer; font-size:15px; line-height:1;}
+  .chap.locked .info-btn{opacity:1;}
+  #modal-bg{position:fixed; inset:0; background:rgba(0,0,0,.65); display:none;
+    align-items:flex-end; justify-content:center; z-index:50;}
+  #modal-bg.open{display:flex;}
+  .modal{background:var(--card); border:1px solid #3c3c58; border-radius:20px 20px 0 0;
+    max-width:520px; width:100%; padding:20px; max-height:80vh; overflow-y:auto;
+    position:relative; animation:fade .2s ease;}
+  #modal-close{position:absolute; top:12px; right:14px; background:var(--card2);
+    border:none; color:var(--muted); width:32px; height:32px; border-radius:99px;
+    font-size:15px; cursor:pointer;}
+  .modal .obj{background:#16233a; border-left:4px solid var(--accent2); border-radius:8px;
+    padding:10px 12px; font-size:14px; line-height:1.5; margin-top:8px;}
+  .modal .obj ul{margin:8px 0 2px 0; padding-left:20px;}
+  .modal .obj li{margin-bottom:6px; line-height:1.5;}
+
+  /* ===== Frise des niveaux ===== */
+  .lvl-row{display:flex; gap:14px; position:relative; padding-bottom:26px;}
+  .lvl-row .line{position:absolute; left:23px; top:50px; bottom:2px; width:3px;
+    background:#33334d; border-radius:2px;}
+  .lvl-row.done .line{background:var(--accent2);}
+  .lvl-row:last-child .line{display:none;}
+  .lvl-node{width:48px; height:48px; border-radius:99px; background:var(--card2);
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+    flex-shrink:0; border:2px solid #3c3c58; z-index:1;}
+  .lvl-row.done .lvl-node{border-color:var(--accent2);}
+  .lvl-row.cur .lvl-node{border-color:var(--accent); box-shadow:0 0 14px rgba(255,212,59,.35);}
+  .lvl-row.future{opacity:.6;}
+  .lvl-meta .name{font-weight:800; font-size:15px;}
+  .lvl-meta .name .you{color:var(--accent); font-size:12px; margin-left:6px;}
+  .lvl-meta .xp{color:var(--muted); font-size:12.5px; margin-top:1px;}
+  .lvl-meta .desc{font-size:13.5px; color:#c9c9de; margin-top:4px; line-height:1.5;}
+  .badge-soon{display:inline-block; background:#2a2a3f; color:var(--muted);
+    font-size:11px; border-radius:99px; padding:2px 8px; margin-left:6px; vertical-align:1px;}
+
   /* ===== Sauvegarde ===== */
   .save-box{background:var(--card); border:1px solid #33334d; border-radius:var(--radius);
     padding:18px; margin-bottom:14px;}
@@ -142,12 +186,13 @@
       <div class="logo">Py<span>Quest</span> 🐍</div>
       <div class="xp-pill">⭐ <b id="xp-val">0</b> XP</div>
     </div>
-    <div class="hero">
+    <div class="hero" id="hero-home" style="cursor:pointer;">
       <div class="lvl-emoji" id="lvl-emoji">🥚</div>
       <div class="lvl-name" id="lvl-name">Œuf de Python</div>
       <div class="lvl-sub" id="lvl-sub">Ton aventure commence ici !</div>
       <div class="bar"><i id="lvl-bar" style="width:0%"></i></div>
       <div class="bar-label" id="lvl-bar-label"></div>
+      <div style="text-align:right; color:var(--accent2); font-size:12.5px; font-weight:700; margin-top:6px;">▸ Voir tous les niveaux</div>
     </div>
     <div id="chap-list"></div>
     <button class="btn btn-ghost" id="btn-save-screen">💾 Sauvegarder / restaurer ma progression</button>
@@ -168,6 +213,14 @@
       <div class="bar-label" id="u-stats"></div>
     </div>
     <div id="lesson-list"></div>
+  </section>
+
+  <!-- ======== NIVEAUX ======== -->
+  <section id="screen-levels" class="screen">
+    <button class="backlink" data-goto="home">← Accueil</button>
+    <h2 style="margin-bottom:4px;">🏔️ Ta progression</h2>
+    <div id="levels-xp" style="color:var(--muted); font-size:14px; margin-bottom:18px;"></div>
+    <div id="levels-list"></div>
   </section>
 
   <!-- ======== FICHES ======== -->
@@ -228,6 +281,14 @@
   </section>
 
 </div>
+
+<!-- ======== POP-UP INFO ======== -->
+<div id="modal-bg">
+  <div class="modal">
+    <button id="modal-close" title="Fermer">✕</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
 <script>
 /* ==================== DONNÉES PÉDAGOGIQUES ==================== */
 /* Types de question : qcm (choix), output (prédire la sortie), vf (vrai/faux), fill (compléter) */
@@ -236,6 +297,14 @@ const UNITS = [
 { id:"u1", icon:"🧱", title:"Chapitre 1 — Les bases", desc:"Le vocabulaire minimal pour lire du code", lessons:[
 {
   id:"ch1", icon:"🐣", title:"Premiers pas", sub:"print() et les textes",
+  obj:["reconnaître une instruction print() et prédire ce qu'elle affiche",
+       "distinguer le texte (entre guillemets) du reste du code",
+       "repérer les commentaires (#) et comprendre leur rôle"],
+  resume:["print(...) affiche à l'écran ce qu'on lui donne",
+       "un texte (une « chaîne ») s'écrit entre guillemets — sans guillemets, Python cherche une variable",
+       "ce qui est entre guillemets est pris tel quel : print(\"2 + 2\") n'affiche pas 4",
+       "une ligne commençant par # est un commentaire : Python l'ignore, les humains la lisent",
+       "dans une vraie app, print() sert de journal de bord (les « logs »)"],
   fiches:[
     {t:"Dis bonjour à Python 👋",
      html:`<p>Python est un langage qui lit ton code <b>ligne par ligne</b> et fait exactement ce que tu lui demandes. La toute première instruction magique, c'est <code>print()</code> : elle <b>affiche</b> quelque chose à l'écran.</p>
@@ -279,6 +348,13 @@ const UNITS = [
 },
 {
   id:"ch2", icon:"📦", title:"Les variables", sub:"des boîtes pour ranger tes données",
+  obj:["comprendre qu'une variable est une boîte étiquetée qui garde une valeur",
+       "suivre l'évolution d'une variable ligne après ligne",
+       "lire une f-string : un texte qui insère des variables avec { }"],
+  resume:["nom = valeur crée (ou modifie) une variable — le = veut dire « range », pas « égal »",
+       "x = x + 2 : on lit l'ancienne valeur, on calcule, on range le résultat",
+       "f\"...{variable}...\" insère la valeur de la variable dans le texte",
+       "les variables sont la mémoire (l'« état ») du programme"],
   fiches:[
     {t:"Une boîte avec une étiquette 📦",
      html:`<p>Une <b>variable</b>, c'est comme une boîte avec une étiquette : on y range une valeur pour la réutiliser plus tard. On la crée avec le signe <code>=</code>.</p>
@@ -328,7 +404,77 @@ age = <span class="n">30</span>
   ]
 },
 {
+  id:"ch8", icon:"🏷️", title:"Types et conversions", sub:"pourquoi \"5\" + 5 fait tout planter",
+  obj:["reconnaître les 4 types de base : int, float, str, bool",
+       "prédire le résultat des opérations de base (+ - * /) selon les types",
+       "comprendre pourquoi \"5\" + 5 provoque une erreur, et comment convertir"],
+  resume:["int = entier, float = à virgule, str = texte, bool = True/False",
+       "+ - * / calculent sur les nombres ; + colle deux textes ensemble",
+       "on ne mélange pas texte et nombre : \"5\" + 5 → TypeError",
+       "int(\"5\") convertit en nombre, str(5) convertit en texte",
+       "None = « rien » : la valeur d'une boîte vide (pas encore de résultat)",
+       "type(x) te dit le type d'une valeur — très utile pour comprendre un bug"],
+  fiches:[
+    {t:"Les 4 familles de valeurs 🏷️",
+     html:`<p>Tu les as déjà croisées — voici la famille au complet :</p>
+<pre>nb_jours = <span class="n">4</span>          <span class="c"># int → entier</span>
+prix = <span class="n">89.90</span>         <span class="c"># float → à virgule</span>
+ville = <span class="s">"Rome"</span>       <span class="c"># str → texte</span>
+reserve = <span class="k">True</span>       <span class="c"># bool → vrai/faux</span></pre>
+<p>Et si tu as un doute, <code>type()</code> répond :</p>
+<pre><span class="f">print</span>(<span class="f">type</span>(prix))  <span class="c"># &lt;class 'float'&gt;</span></pre>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> chaque donnée a un type choisi exprès. Un prix ? float. Un nombre de nuits ? int. Un nom de ville ? str. Une case à cocher ? bool. Quand on concevra tes apps, on définira les types ensemble.</div>
+<div class="tip">💡 Il existe aussi une valeur spéciale : <code>None</code> — « rien ». C'est la boîte vide : « pas encore de résultat », « champ non rempli ». Tu la croiseras souvent dans du vrai code.</div>`},
+    {t:"Les opérations, selon le type ➗",
+     html:`<p>Le même symbole <code>+</code> ne fait pas la même chose selon les types !</p>
+<pre><span class="f">print</span>(<span class="n">7</span> + <span class="n">3</span>)        <span class="c"># 10  (addition)</span>
+<span class="f">print</span>(<span class="s">"7"</span> + <span class="s">"3"</span>)    <span class="c"># 73  (collage de textes !)</span>
+<span class="f">print</span>(<span class="n">10</span> / <span class="n">4</span>)       <span class="c"># 2.5</span>
+<span class="f">print</span>(<span class="n">3</span> * <span class="s">"ha"</span>)     <span class="c"># hahaha 😄</span></pre>
+<div class="tip">💡 Sur des textes, <code>+</code> colle (on dit « concatène »). <code>"7" + "3"</code> donne le TEXTE <code>73</code>, pas le nombre 10. Ce détail explique une famille entière de bugs !</div>`},
+    {t:"Le crash le plus célèbre 💥",
+     html:`<p>Et si on mélange texte et nombre ?</p>
+<pre>age = <span class="s">"5"</span>       <span class="c"># ⚠️ texte, à cause des guillemets</span>
+<span class="f">print</span>(age + <span class="n">3</span>)  <span class="c"># 💥 TypeError !</span></pre>
+<p>Python refuse : il ne sait pas s'il doit calculer ou coller. La solution : <b>convertir</b>.</p>
+<pre><span class="f">print</span>(<span class="f">int</span>(age) + <span class="n">3</span>)      <span class="c"># 8 → int("5") devient le nombre 5</span>
+<span class="f">print</span>(<span class="s">"Âge : "</span> + <span class="f">str</span>(<span class="n">8</span>)) <span class="c"># Âge : 8 → str(8) devient un texte</span></pre>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> tout ce qui vient de l'extérieur (un champ de formulaire, un fichier, une API) arrive souvent en TEXTE. La moitié des bugs de débutant, c'est un nombre resté déguisé en texte. Maintenant tu sauras le repérer !</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Quel est le type de la valeur <code>True</code> ?",
+     opts:['bool (booléen)','str (texte)','int (entier)','float'], a:0,
+     exp:"True et False sont les deux valeurs du type bool — celles que produisent les comparaisons."},
+    {type:"output", q:"Que va afficher ce code ?", code:'print("4" + "2")',
+     opts:['6','42','4 + 2','Une erreur'], a:1,
+     exp:"Deux textes : + les colle. Le résultat est le texte 42, pas un calcul !"},
+    {type:"output", q:"Que va afficher ce code ?", code:'nuits = "3"\nprint(nuits * 2)',
+     opts:['6','33','32','Une erreur'], a:1,
+     exp:"nuits est un TEXTE (guillemets) : texte * 2 = le texte répété deux fois → 33. Sournois, hein ? 😄"},
+    {type:"qcm", q:"🐛 <b>Repère le bug</b> — Pourquoi ce code plante-t-il ?",
+     code:'prix = "25"\ntotal = prix + 10',
+     opts:["On ne peut pas additionner un texte et un nombre","prix est un mot réservé","Il manque un print","total est mal orthographié"], a:0,
+     exp:"prix est un texte à cause des guillemets → TypeError. Il faudrait int(prix) + 10."},
+    {type:"qcm", q:"Comment transformer le texte <code>\"120\"</code> en nombre pour faire un calcul ?",
+     opts:['int("120")','str("120")','type("120")','nombre("120")'], a:0,
+     exp:"int(...) convertit vers un entier. str(...) fait l'inverse (vers un texte)."},
+    {type:"output", q:"Que va afficher ce code ?", code:'budget = 500\nprint("Budget : " + str(budget) + " €")',
+     opts:['Budget : 500 €','Budget : budget €','Une TypeError','Budget : str(500) €'], a:0,
+     exp:"str(budget) transforme 500 en texte, et + colle les trois morceaux. (Une f-string ferait pareil en plus lisible !)"}
+  ]
+},
+{
   id:"ch3", icon:"🚦", title:"Les conditions", sub:"si... alors... sinon",
+  obj:["lire un bloc if / elif / else et prédire quelle branche s'exécute",
+       "comprendre le rôle de l'indentation et des deux-points",
+       "distinguer = (ranger) de == (comparer)",
+       "combiner des conditions avec and, or et not"],
+  resume:["if condition: exécute le bloc indenté seulement si la condition est vraie",
+       "elif = « sinon si », else = « sinon » — Python s'arrête à la première condition vraie",
+       "une comparaison (>, <, ==, !=, >=, <=) vaut True ou False",
+       "= range une valeur, == compare deux valeurs",
+       "and = les deux à la fois ; or = au moins une ; not = l'inverse",
+       "les conditions sont les règles métier d'une app"],
   fiches:[
     {t:"Si... alors 🚦",
      html:`<p>Avec <code>if</code> (« si » en anglais), ton programme peut <b>prendre des décisions</b> : le code indenté (décalé) ne s'exécute que si la condition est vraie.</p>
@@ -354,7 +500,20 @@ age = <span class="n">30</span>
 <span class="f">print</span>(x > <span class="n">3</span>)    <span class="c"># True</span>
 <span class="f">print</span>(x == <span class="n">10</span>)  <span class="c"># False</span></pre>
 <p>Les comparateurs : <code>==</code> égal, <code>!=</code> différent, <code>&lt;</code> <code>&gt;</code> plus petit/grand, <code>&lt;=</code> <code>&gt;=</code> ou égal.</p>
-<div class="tip">⚠️ Piège classique : <code>=</code> range une valeur, <code>==</code> compare deux valeurs. Deux signes pour comparer !</div>`}
+<div class="tip">⚠️ Piège classique : <code>=</code> range une valeur, <code>==</code> compare deux valeurs. Deux signes pour comparer !</div>`},
+    {t:"Combiner : and, or, not 🔗",
+     html:`<p>Les vraies règles combinent souvent plusieurs conditions :</p>
+<pre>budget_ok = <span class="k">True</span>
+meteo_ok = <span class="k">False</span>
+
+<span class="k">if</span> budget_ok <span class="k">and</span> meteo_ok:
+    <span class="f">print</span>(<span class="s">"On part !"</span>)      <span class="c"># les DEUX doivent être vraies</span>
+<span class="k">if</span> budget_ok <span class="k">or</span> meteo_ok:
+    <span class="f">print</span>(<span class="s">"Ça se discute…"</span>)  <span class="c"># au moins UNE suffit</span>
+<span class="k">if</span> <span class="k">not</span> meteo_ok:
+    <span class="f">print</span>(<span class="s">"Prends un parapluie"</span>) <span class="c"># l'inverse</span></pre>
+<p>Ici : « On part ! » ne s'affiche pas (and exige les deux), les deux autres s'affichent.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> « si l'utilisateur est connecté ET que l'étape n'est pas déjà réservée »… Les règles métier que tu écriras dans tes specs se traduisent mot pour mot en and/or/not.</div>`}
   ],
   quiz:[
     {type:"qcm", q:"Quel symbole utilise-t-on pour tester si deux valeurs sont <b>égales</b> ?",
@@ -371,6 +530,10 @@ age = <span class="n">30</span>
     {type:"output", q:"Que va afficher ce code ?", code:'vitesse = 120\nif vitesse > 130:\n    print("Trop vite !")\nelif vitesse > 110:\n    print("Ralentis un peu")\nelse:\n    print("Tout va bien")',
      opts:['Trop vite !','Ralentis un peu','Tout va bien','Rien'], a:1,
      exp:"120 n'est pas > 130, mais 120 > 110 : c'est le elif qui gagne. Python s'arrête à la première condition vraie."},
+    {type:"output", q:"Que va afficher ce code ?",
+     code:'stock = 5\nurgent = False\nprint(stock > 0 and not urgent)',
+     opts:['True','False','5','Une erreur'], a:0,
+     exp:"stock > 0 est vrai, not urgent est vrai (l'inverse de False) : vrai ET vrai → True."},
     {type:"qcm", q:"🐛 <b>Repère le bug</b> — Pourquoi ce code plante-t-il ?",
      code:'budget = 500\nif budget = 500:\n    print("Budget défini !")',
      opts:["Il manque des guillemets autour de 500","Le if utilise = au lieu de ==","print est mal écrit","Rien, ce code fonctionne"], a:1,
@@ -379,6 +542,13 @@ age = <span class="n">30</span>
 },
 {
   id:"ch4", icon:"🔁", title:"Les boucles", sub:"répéter sans se fatiguer",
+  obj:["prédire combien de fois une boucle for s'exécute",
+       "lire range() dans ses deux formes : range(n) et range(a, b)",
+       "comprendre le principe du while et le danger de la boucle infinie"],
+  resume:["for i in range(3): répète 3 fois, avec i = 0, 1, 2",
+       "range(a, b) va de a à b EXCLU : range(1, 4) → 1, 2, 3",
+       "while répète tant que sa condition est vraie — si elle ne devient jamais fausse : boucle infinie",
+       "les boucles servent surtout à traiter chaque élément d'une collection"],
   fiches:[
     {t:"Répéter avec for 🔁",
      html:`<p>Une <b>boucle</b> répète du code plusieurs fois. La boucle <code>for</code> avec <code>range()</code> est la plus courante :</p>
@@ -424,11 +594,159 @@ age = <span class="n">30</span>
      opts:["Il affiche le planning des jours 1 à 3","Il affiche le planning des jours 0 à 3","Il affiche le planning des jours 1 à 4","Il n'affiche qu'une seule ligne"], a:0,
      exp:"range(1, 4) → 1, 2, 3. Une boucle + une f-string : voilà comment ton app voyage générera son planning à partir des données. Tu lis déjà du vrai code d'app ! 🎉"}
   ]
+},
+{
+  id:"ch9", icon:"🚑", title:"Lire un message d'erreur", sub:"décoder un crash sans paniquer",
+  obj:["décoder un message d'erreur Python (un « traceback ») sans paniquer",
+       "identifier les 5 erreurs les plus courantes : NameError, TypeError, SyntaxError, IndexError, KeyError",
+       "lire un try/except : le code qui prévoit l'erreur au lieu de planter",
+       "savoir décrire une erreur efficacement — pour la corriger, ou me la signaler !"],
+  resume:["un traceback se lit d'abord par sa DERNIÈRE ligne : le type d'erreur et son explication",
+       "la mention « line N » te dit à quelle ligne ça a cassé",
+       "NameError = nom inconnu (faute de frappe, guillemets oubliés) ; TypeError = types incompatibles",
+       "SyntaxError = phrase mal formée (deux-points oublié...) ; IndexError = position inexistante ; KeyError = clé inexistante",
+       "try/except = « tente ceci, et si telle erreur survient, fais cela » — l'app encaisse au lieu de planter",
+       "signaler un bug = le message d'erreur + la ligne + ce que tu faisais. Rapport parfait !"],
+  fiches:[
+    {t:"Le traceback, ton allié 🚑",
+     html:`<p>Quand un programme plante, Python affiche un <b>traceback</b>. Ça ressemble à ça :</p>
+<pre><span class="c">Traceback (most recent call last):
+  File "carnet.py", line 4, in &lt;module&gt;
+    print(vile)
+NameError: name 'vile' is not defined</span></pre>
+<p>Réflexe de pro : lire <b>la dernière ligne d'abord</b> (le type d'erreur et son explication), puis remonter à <b>« line 4 »</b> (l'endroit du crash).</p>
+<div class="tip">💡 Ici : NameError, « le nom vile n'existe pas ». Ligne 4. Une faute de frappe : c'était <code>ville</code>. Diagnostic en 5 secondes ⏱️</div>`},
+    {t:"Le top 5 des erreurs 🏆",
+     html:`<p>Cinq familles couvrent l'essentiel de ce que tu croiseras :</p>
+<pre><span class="c"># NameError → nom inconnu (faute de frappe, guillemets oubliés)</span>
+<span class="f">print</span>(bonjour)
+<span class="c"># TypeError → types incompatibles</span>
+<span class="s">"5"</span> + <span class="n">5</span>
+<span class="c"># SyntaxError → phrase mal formée (: oublié, parenthèse ouverte...)</span>
+<span class="k">if</span> x > <span class="n">3</span>
+<span class="c"># IndexError → position inexistante dans une liste</span>
+villes[<span class="n">9</span>]
+<span class="c"># KeyError → clé inexistante dans un dictionnaire</span>
+profil[<span class="s">"agee"</span>]</pre>
+<div class="tip">💡 Le nom de l'erreur te dit déjà OÙ chercher : Name → un nom, Type → un mélange de types, Syntax → la ponctuation, Index → une liste, Key → un dictionnaire.</div>`},
+    {t:"Bien signaler un bug 🎯",
+     html:`<p>Ton futur rôle de product owner : quand mon code plantera chez toi, ton rapport de bug fera toute la différence.</p>
+<p>❌ « Ça marche pas » → je dois deviner.<br>
+✅ « En lançant l'app, TypeError ligne 12 : <code>can only concatenate str (not "int") to str</code>. J'avais entré 3 comme nombre de nuits. » → je corrige en une minute.</p>
+<div class="tip">🏗️ <b>La recette du rapport parfait :</b> 1️⃣ le message d'erreur copié tel quel, 2️⃣ la ligne indiquée, 3️⃣ ce que tu faisais au moment du crash. Avec ça, n'importe quel développeur (ou IA 😉) corrige vite et bien.</div>`},
+    {t:"try / except : prévoir l'erreur 🛡️",
+     html:`<p>Le bon code ne se contente pas de planter : il <b>prévoit</b> les erreurs probables avec <code>try</code> / <code>except</code> :</p>
+<pre>saisie = <span class="s">"abc"</span>   <span class="c"># ce que l'utilisateur a tapé</span>
+<span class="k">try</span>:
+    nuits = <span class="f">int</span>(saisie)      <span class="c"># tente la conversion…</span>
+    <span class="f">print</span>(<span class="s">f"{nuits} nuits"</span>)
+<span class="k">except</span> ValueError:
+    <span class="f">print</span>(<span class="s">"Entre un nombre !"</span>) <span class="c"># …sinon, message propre</span></pre>
+<p>Se lit : « <b>tente</b> ceci, et si une ValueError survient, <b>fais</b> cela à la place ». L'app affiche un message clair au lieu d'exploser.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> tout ce qui vient de l'extérieur (saisie utilisateur, fichier, réponse d'API) peut mal tourner. En tant que PO, tu peux l'exiger dans tes specs : « en cas de saisie invalide, l'app affiche un message, elle ne plante pas ». Tu sauras maintenant vérifier que le try/except est bien là !</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Par où commencer la lecture d'un traceback ?",
+     opts:["Par la dernière ligne : le type d'erreur et son explication","Par la première ligne, toujours","Par le milieu","On ne peut pas le lire, c'est pour les machines"], a:0,
+     exp:"Dernière ligne = le diagnostic. Ensuite on remonte au « line N » pour situer le crash."},
+    {type:"qcm", q:"🔍 Ce traceback indique quoi ?",
+     code:'File "app.py", line 7\n    if budget > 100\n                   ^\nSyntaxError: expected \':\'',
+     opts:["Il manque les deux-points à la fin du if, ligne 7","budget n'existe pas","100 est trop grand","Le fichier app.py est introuvable"], a:0,
+     exp:"SyntaxError « expected ':' » : Python attendait les deux-points après la condition. La flèche ^ pointe même l'endroit !"},
+    {type:"qcm", q:"Ton app affiche <code>NameError: name 'pritn' is not defined</code>. C'est probablement...",
+     opts:["Une faute de frappe : pritn au lieu de print","Un problème de connexion internet","Une liste trop courte","Un dictionnaire sans clé"], a:0,
+     exp:"NameError = nom inconnu. Ici le nom qui n'existe pas, c'est pritn — print mal tapé."},
+    {type:"qcm", q:"<code>KeyError: 'artiste'</code> en lisant chanson[\"artiste\"]. Que s'est-il passé ?",
+     opts:["Le dictionnaire chanson n'a pas de clé \"artiste\"","La liste est trop courte","artiste devrait être un nombre","Python ne connaît pas la musique"], a:0,
+     exp:"KeyError = la clé demandée n'existe pas dans ce dictionnaire. Peut-être s'appelle-t-elle \"artist\" ou n'a pas été remplie ?"},
+    {type:"output", q:"Ce code va-t-il planter ? Si oui, avec quelle erreur ?", code:'jours = ["lundi", "mardi"]\nprint(jours[2])',
+     opts:['IndexError : la position 2 n\'existe pas','KeyError : pas de clé 2','Non, il affiche mardi','SyntaxError'], a:0,
+     exp:"2 éléments → positions 0 et 1. Demander [2] → IndexError. Le nom de l'erreur t'oriente : un problème de liste."},
+    {type:"output", q:"Que va afficher ce code ?",
+     code:'saisie = "abc"\ntry:\n    nuits = int(saisie)\n    print(f"{nuits} nuits")\nexcept ValueError:\n    print("Entre un nombre !")',
+     opts:['abc nuits','Entre un nombre !','Un traceback ValueError','Rien'], a:1,
+     exp:"int(\"abc\") échoue → le except attrape la ValueError et affiche le message propre. Pas de crash : c'est tout l'intérêt !"},
+    {type:"qcm", q:"🎯 <b>Scénario PO</b> — Mon code plante chez toi. Quel est le MEILLEUR rapport de bug ?",
+     opts:["« TypeError ligne 12 : can only concatenate str to str — j'avais tapé 3 nuits »","« Ça marche pas, corrige »","« Il y a une erreur rouge quelque part »","« L'app est cassée depuis hier »"], a:0,
+     exp:"Message exact + ligne + contexte : avec ça je corrige en une minute. C'est une vraie compétence de product owner !"}
+  ]
+},
+{
+  id:"tp1", icon:"🧪", title:"TP — Carnet de voyage v0", sub:"mission : vérifier le code livré", tp:true,
+  obj:["lire un programme complet qui combine tout le chapitre",
+       "vérifier qu'un code livré correspond à ce qui a été demandé (ton rôle de PO !)",
+       "localiser où faire une modification simple"],
+  resume:["tu as lu ton premier programme complet 🎉",
+       "vérifier une livraison = comparer chaque exigence du cahier des charges à ce que fait le code",
+       "pour modifier un comportement, on cherche LA variable ou LA ligne qui le pilote",
+       "prochaine étape (Chapitre 2) : remplacer ces variables éparses par de vraies structures de données"],
+  fiches:[
+    {t:"🧪 Ta mission",
+     html:`<p>Jouons ton futur rôle ! Tu es <b>product owner</b> de ton app voyage, et tu m'as demandé (à moi, Claude 🤖) un premier prototype :</p>
+<p>📋 <b>Ton cahier des charges :</b><br>
+1️⃣ afficher la destination et la durée du séjour<br>
+2️⃣ calculer ce qui reste du budget après l'hôtel<br>
+3️⃣ alerter si le budget est dépassé<br>
+4️⃣ lister les jours à planifier</p>
+<p>Je t'ai livré le code — il est sur la fiche suivante. Ta mission : le lire tranquillement, vérifier qu'il fait le job, et répondre aux questions du quiz.</p>
+<div class="tip">💡 Technique de lecture : ligne par ligne, en te demandant à chaque fois « que vaut chaque variable maintenant ? ». Prends ton temps, le code reste affiché dans les questions.</div>`},
+    {t:"📦 Le code livré",
+     html:`<pre><span class="c"># Carnet de voyage v0 — livré par Claude 🤖</span>
+destination = <span class="s">"Rome"</span>
+budget = <span class="n">500</span>
+nb_jours = <span class="n">4</span>
+prix_hotel = <span class="n">90</span>   <span class="c"># par nuit</span>
+
+cout_hotel = prix_hotel * nb_jours
+reste = budget - cout_hotel
+
+<span class="f">print</span>(<span class="s">f"Voyage à {destination} ({nb_jours} jours)"</span>)
+<span class="k">if</span> reste < <span class="n">0</span>:
+    <span class="f">print</span>(<span class="s">"⚠️ Budget dépassé !"</span>)
+<span class="k">elif</span> reste < <span class="n">50</span>:
+    <span class="f">print</span>(<span class="s">"Budget serré..."</span>)
+<span class="k">else</span>:
+    <span class="f">print</span>(<span class="s">f"OK ! Il restera {reste} euros"</span>)
+
+<span class="k">for</span> jour <span class="k">in</span> <span class="f">range</span>(<span class="n">1</span>, nb_jours + <span class="n">1</span>):
+    <span class="f">print</span>(<span class="s">f"Jour {jour} : à planifier"</span>)</pre>
+<div class="tip">🎯 Lis-le une deuxième fois en suivant les valeurs : cout_hotel = ? reste = ? Quelle branche du if ? Combien de tours de boucle ?</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Que calcule la ligne <code>cout_hotel = prix_hotel * nb_jours</code> ?",
+     code:'destination = "Rome"\nbudget = 500\nnb_jours = 4\nprix_hotel = 90\n\ncout_hotel = prix_hotel * nb_jours\nreste = budget - cout_hotel',
+     opts:["90 × 4 = 360 € : le coût total de l'hôtel","90 + 4 = 94 €","Le prix d'une seule nuit","Le budget restant"], a:0,
+     exp:"prix par nuit × nombre de nuits = coût total du séjour à l'hôtel."},
+    {type:"output", q:"Avec ces valeurs, qu'affiche le bloc if / elif / else ?",
+     code:'budget = 500\ncout_hotel = 360\nreste = budget - cout_hotel\n\nif reste < 0:\n    print("⚠️ Budget dépassé !")\nelif reste < 50:\n    print("Budget serré...")\nelse:\n    print(f"OK ! Il restera {reste} euros")',
+     opts:['⚠️ Budget dépassé !','Budget serré...','OK ! Il restera 140 euros','Rien du tout'], a:2,
+     exp:"reste = 500 − 360 = 140. Ni négatif, ni < 50 : c'est le else qui parle."},
+    {type:"qcm", q:"🎯 <b>Mission PO</b> — Tu veux passer le séjour à 6 jours. Quelle ligne changer ?",
+     opts:['nb_jours = 4','budget = 500','for jour in range(1, nb_jours + 1):','prix_hotel = 90'], a:0,
+     exp:"nb_jours pilote TOUT : le coût de l'hôtel ET la liste des jours. Une seule variable à changer — c'est le signe d'un code bien conçu."},
+    {type:"output", q:"Combien de lignes « Jour X : à planifier » ce code affiche-t-il ?",
+     code:'nb_jours = 4\nfor jour in range(1, nb_jours + 1):\n    print(f"Jour {jour} : à planifier")',
+     opts:['3','4','5','Aucune'], a:1,
+     exp:"range(1, 5) → 1, 2, 3, 4. Le « + 1 » sert exactement à inclure le dernier jour."},
+    {type:"qcm", q:"🐛 Si j'avais écrit <code>budget = \"500\"</code> (avec guillemets), que se passerait-il ?",
+     opts:["Une TypeError à la ligne reste = budget - cout_hotel","Rien, ce serait pareil","Le budget deviendrait 0","Une boucle infinie"], a:0,
+     exp:"Texte − nombre : impossible ! La leçon Types t'a préparé à ce piège. 😉"},
+    {type:"vf", q:"📋 <b>Vérification de livraison</b> — Exigence 3 : « alerter si le budget est dépassé ». Le code livré respecte-t-il cette exigence ?", a:true,
+     exp:"Oui : si reste < 0, le code affiche « ⚠️ Budget dépassé ! ». Livraison conforme — tu viens de faire ta première revue de code ! 🎉"}
+  ]
 }
 ]},
 { id:"u2", icon:"🗃️", title:"Chapitre 2 — Les données", desc:"Les structures qui font tourner les vraies apps", lessons:[
 {
   id:"ch5", icon:"📋", title:"Les listes", sub:"plusieurs valeurs dans une seule boîte",
+  obj:["reconnaître une liste [ ] et accéder à ses éléments par index (à partir de 0 !)",
+       "lire les opérations courantes : append, remove, len()",
+       "lire une boucle qui parcourt une liste"],
+  resume:["une liste [a, b, c] rassemble plusieurs valeurs, accessibles par [0], [1], [2]...",
+       "len(liste) donne le nombre d'éléments",
+       "liste.append(x) ajoute à la fin ; liste.remove(x) retire",
+       "for element in liste: traite chaque élément, un par tour",
+       "demander une position qui n'existe pas → IndexError"],
   fiches:[
     {t:"Une liste = plusieurs valeurs 📋",
      html:`<p>Une <b>liste</b> rassemble plusieurs valeurs dans une seule variable, entre crochets <code>[ ]</code>, séparées par des virgules.</p>
@@ -477,6 +795,13 @@ playlist.remove(<span class="s">"Hey Jude"</span>)    <span class="c"># retire c
 },
 {
   id:"ch6", icon:"🗂️", title:"Les dictionnaires", sub:"des étiquettes plutôt que des numéros",
+  obj:["lire un dictionnaire { clé: valeur } et accéder aux valeurs par clé",
+       "comprendre l'ajout et la modification : dico[clé] = valeur",
+       "reconnaître LE motif des vraies apps : la liste de dictionnaires"],
+  resume:["un dictionnaire range des valeurs derrière des clés : d = {\"titre\": \"Imagine\"}",
+       "d[\"titre\"] lit la valeur ; d[\"cle\"] = valeur ajoute ou modifie",
+       "la clé s'écrit entre guillemets — sans guillemets : NameError ; clé inexistante : KeyError",
+       "liste de dictionnaires = la collection + les infos de chaque élément : le squelette des données d'app"],
   fiches:[
     {t:"Des étiquettes plutôt que des numéros 🗂️",
      html:`<p>Un <b>dictionnaire</b> range des valeurs derrière des <b>clés</b> (des étiquettes), entre accolades <code>{ }</code> :</p>
@@ -525,6 +850,14 @@ profil[<span class="s">"nom"</span>] = <span class="s">"Samuel"</span>  <span cl
 },
 {
   id:"ch7", icon:"📄", title:"Le JSON", sub:"le format d'échange universel",
+  obj:["reconnaître du JSON et sa correspondance avec les dictionnaires/listes Python",
+       "descendre dans un JSON imbriqué, clé par clé",
+       "comprendre à quoi servent json.loads / json.dumps, et le mot import"],
+  resume:["JSON = format texte universel d'échange entre programmes (app ↔ serveur, API...)",
+       "{ } = objet (dictionnaire), [ ] = liste — et ils s'emboîtent",
+       "on descend étage par étage : data[\"meteo\"][\"temp\"]",
+       "json.loads : texte JSON → données Python ; json.dumps : l'inverse",
+       "import charge une boîte à outils (un « module »)"],
   fiches:[
     {t:"Le langage commun des apps 📄",
      html:`<p>Le <b>JSON</b> est un format <b>texte</b> pour échanger des données entre programmes : ton app ↔ un serveur, une app ↔ une autre. Bonne nouvelle : il ressemble presque trait pour trait aux dictionnaires et listes Python !</p>
@@ -575,18 +908,961 @@ donnees = json.loads(texte)</pre>
      opts:["Il manque une virgule entre les deux lignes","ville devrait être en majuscules","Les accolades sont interdites en JSON","Rien, il est correct"], a:0,
      exp:"Chaque paire clé: valeur doit être séparée par une virgule. L'erreur de JSON la plus fréquente au monde — tu sauras la repérer !"}
   ]
+},
+{
+  id:"tp2", icon:"🧪", title:"TP — Carnet de voyage v1", sub:"mission : le carnet passe aux vraies données", tp:true,
+  obj:["lire le motif central des apps : une boucle sur une liste de dictionnaires",
+       "suivre un cumul (total) qui grandit au fil d'une boucle",
+       "préparer une évolution : savoir OÙ ajouter des données"],
+  resume:["liste de dictionnaires + boucle + cumul : tu viens de lire le squelette de 80 % des apps",
+       "total = total + ... : un cumul, additionné à chaque tour de boucle",
+       "ajouter une donnée = ajouter un dictionnaire à la liste — la logique s'adapte toute seule",
+       "séparer les DONNÉES de la LOGIQUE, c'est ça, l'architecture. Tu y es !"],
+  fiches:[
+    {t:"🧪 Ta mission",
+     html:`<p>Deuxième itération de ton app voyage ! Après ta revue du TP précédent, tu m'as demandé une évolution :</p>
+<p>📋 <b>Ton cahier des charges v1 :</b><br>
+1️⃣ structurer le voyage en vraies données (étapes, activités, coûts)<br>
+2️⃣ afficher le programme jour par jour<br>
+3️⃣ calculer le total des activités et le budget restant</p>
+<p>J'ai remplacé les variables éparses de la v0 par une vraie structure de données. Le code livré est sur la fiche suivante.</p>
+<div class="tip">💡 Tu vas reconnaître TOUT ce que tu as appris au Chapitre 2 : un dictionnaire, une liste de dictionnaires dedans, une boucle qui la parcourt. C'est le grand assemblage !</div>`},
+    {t:"📦 Le code livré",
+     html:`<pre><span class="c"># Carnet de voyage v1 — livré par Claude 🤖</span>
+voyage = {
+    <span class="s">"destination"</span>: <span class="s">"Rome"</span>,
+    <span class="s">"budget"</span>: <span class="n">500</span>,
+    <span class="s">"etapes"</span>: [
+        {<span class="s">"jour"</span>: <span class="n">1</span>, <span class="s">"activite"</span>: <span class="s">"Colisée"</span>, <span class="s">"cout"</span>: <span class="n">25</span>},
+        {<span class="s">"jour"</span>: <span class="n">2</span>, <span class="s">"activite"</span>: <span class="s">"Vatican"</span>, <span class="s">"cout"</span>: <span class="n">30</span>},
+        {<span class="s">"jour"</span>: <span class="n">3</span>, <span class="s">"activite"</span>: <span class="s">"Plage d'Ostie"</span>, <span class="s">"cout"</span>: <span class="n">0</span>}
+    ]
+}
+
+total = <span class="n">0</span>
+<span class="k">for</span> etape <span class="k">in</span> voyage[<span class="s">"etapes"</span>]:
+    <span class="f">print</span>(<span class="s">f"Jour {etape['jour']} : {etape['activite']} ({etape['cout']} €)"</span>)
+    total = total + etape[<span class="s">"cout"</span>]
+
+reste = voyage[<span class="s">"budget"</span>] - total
+<span class="f">print</span>(<span class="s">f"Activités : {total} € — Reste : {reste} €"</span>)</pre>
+<div class="tip">🎯 Suis le total au fil de la boucle : 0 → 25 → 55 → 55. Et remarque : si on ajoute une étape aux données, la boucle la traitera sans changer une ligne de logique.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Quelle est la structure de <code>voyage[\"etapes\"]</code> ?",
+     opts:["Une liste de dictionnaires","Un dictionnaire de listes","Une liste de textes","Un nombre"], a:0,
+     exp:"Des crochets [ ] contenant des accolades { } : une liste dont chaque élément est un dictionnaire-étape. LE motif des apps !"},
+    {type:"output", q:"Qu'affiche le 3ᵉ tour de la boucle ?",
+     code:'etapes = [\n    {"jour": 1, "activite": "Colisée", "cout": 25},\n    {"jour": 2, "activite": "Vatican", "cout": 30},\n    {"jour": 3, "activite": "Plage d\'Ostie", "cout": 0}\n]\nfor etape in etapes:\n    print(f"Jour {etape[\'jour\']} : {etape[\'activite\']} ({etape[\'cout\']} €)")',
+     opts:["Jour 3 : Plage d'Ostie (0 €)","Jour 2 : Vatican (30 €)","Jour 3 : Vatican (30 €)","Une erreur : cout vaut 0"], a:0,
+     exp:"3ᵉ tour = 3ᵉ élément de la liste. Un coût de 0 € n'est pas une erreur — la plage est gratuite ! 🏖️"},
+    {type:"output", q:"Que vaut <code>total</code> à la fin de la boucle ?",
+     code:'total = 0\nfor etape in etapes:   # couts : 25, 30, 0\n    total = total + etape["cout"]',
+     opts:['25','30','55','0'], a:2,
+     exp:"0 + 25 = 25, puis + 30 = 55, puis + 0 = 55. Un cumul, tour après tour."},
+    {type:"output", q:"Et qu'affiche la dernière ligne du programme ?",
+     code:'reste = voyage["budget"] - total   # 500 - 55\nprint(f"Activités : {total} € — Reste : {reste} €")',
+     opts:["Activités : 55 € — Reste : 445 €","Activités : 445 € — Reste : 55 €","Activités : 55 € — Reste : 500 €","Une TypeError"], a:0,
+     exp:"500 − 55 = 445. Exigence 3 du cahier des charges : validée ✔"},
+    {type:"qcm", q:"🎯 <b>Mission PO</b> — Tu veux ajouter « Jour 4 : Trastevere, 15 € ». Que faut-il faire ?",
+     opts:["Ajouter un dictionnaire à la liste etapes","Créer une variable jour4 séparée","Modifier la boucle for","Changer voyage[\"budget\"]"], a:0,
+     exp:"On ajoute {\"jour\": 4, \"activite\": \"Trastevere\", \"cout\": 15} aux données, et la boucle s'en occupe sans changer une ligne. Données et logique séparées : c'est de l'architecture !"},
+    {type:"output", q:"Pour finir en beauté : que vaut <code>voyage[\"etapes\"][0][\"cout\"]</code> ?",
+     opts:['25','30','0','"Colisée"'], a:0,
+     exp:"[\"etapes\"] → la liste, [0] → la première étape, [\"cout\"] → 25. Dictionnaire, liste, dictionnaire : tu navigues comme un pro. 🎓"}
+  ]
+}
+]},
+{ id:"u3", icon:"🧩", title:"Chapitre 3 — Les fonctions", desc:"Les briques qui organisent un vrai programme", lessons:[
+{
+  id:"ch10", icon:"🧩", title:"Les fonctions", sub:"des recettes qu'on nomme et qu'on réutilise",
+  obj:["reconnaître la définition d'une fonction (def) et son appel",
+       "lire les paramètres : ce qu'on donne à la fonction",
+       "comprendre return — et sa différence avec print"],
+  resume:["def nom(): définit une fonction ; nom() l'exécute (les parenthèses appellent !)",
+       "les paramètres sont les entrées : def saluer(prenom): ... puis saluer(\"Léa\")",
+       "return renvoie un résultat au programme ; print ne fait qu'afficher",
+       "une fonction définie mais jamais appelée ne s'exécute jamais",
+       "une fonction = une brique réutilisable avec un nom qui dit ce qu'elle fait"],
+  fiches:[
+    {t:"Une recette qu'on nomme 🧩",
+     html:`<p>Une <b>fonction</b>, c'est un bloc de code auquel on donne un <b>nom</b>, pour le rejouer à volonté :</p>
+<pre><span class="k">def</span> <span class="f">accueillir</span>():
+    <span class="f">print</span>(<span class="s">"Bienvenue dans ton carnet !"</span>)
+    <span class="f">print</span>(<span class="s">"Bon voyage 🧳"</span>)
+
+accueillir()   <span class="c"># ← l'appel : le bloc s'exécute</span>
+accueillir()   <span class="c"># ← et on peut le rejouer !</span></pre>
+<p>⚠️ Détail crucial : <code>def</code> ne fait que <b>définir</b> la recette. Sans appel (le nom suivi de <code>()</code>), rien ne s'exécute !</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> fini le copier-coller. Un comportement = une fonction, écrite une fois, appelée partout. C'est la première règle d'un code propre.</div>`},
+    {t:"Les paramètres : ce qu'on lui donne 🎁",
+     html:`<p>Une fonction devient vraiment utile quand elle accepte des <b>paramètres</b> — ses entrées :</p>
+<pre><span class="k">def</span> <span class="f">saluer</span>(prenom):
+    <span class="f">print</span>(<span class="s">f"Salut {prenom} !"</span>)
+
+saluer(<span class="s">"Léa"</span>)     <span class="c"># Salut Léa !</span>
+saluer(<span class="s">"Antoine"</span>) <span class="c"># Salut Antoine !</span></pre>
+<p>Même recette, ingrédients différents. On peut en donner plusieurs :</p>
+<pre><span class="k">def</span> <span class="f">presenter</span>(ville, nuits):
+    <span class="f">print</span>(<span class="s">f"{ville} — {nuits} nuits"</span>)</pre>
+<div class="tip">💡 À l'intérieur de la fonction, <code>prenom</code> est une variable comme les autres — elle prend la valeur qu'on donne à l'appel.</div>`},
+    {t:"return : la valeur produite 📤",
+     html:`<p>Beaucoup de fonctions ne se contentent pas d'afficher : elles <b>calculent et renvoient</b> un résultat avec <code>return</code>.</p>
+<pre><span class="k">def</span> <span class="f">cout_sejour</span>(prix_nuit, nuits):
+    <span class="k">return</span> prix_nuit * nuits
+
+total = cout_sejour(<span class="n">90</span>, <span class="n">4</span>)   <span class="c"># total vaut 360</span>
+<span class="f">print</span>(total)</pre>
+<p>La nuance à bien saisir : <code>print</code> <b>montre</b> à l'humain, <code>return</code> <b>donne</b> au programme, qui peut ranger le résultat et continuer à travailler avec.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> les fonctions à return sont les rouages internes (calculer, vérifier, transformer). Les print/affichages ne sont que la vitrine. Quand tu liras mon code, repère les return : c'est là que circulent les données.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Quel mot-clé définit une fonction en Python ?",
+     opts:['def','function','make','fonc'], a:0,
+     exp:"def, suivi du nom, des parenthèses (avec ou sans paramètres) et des deux-points."},
+    {type:"output", q:"Que va afficher ce code ?", code:'def signal():\n    print("Bip !")\n\nsignal()\nsignal()',
+     opts:['Bip !','Bip ! puis Bip !','Rien','Une erreur'], a:1,
+     exp:"Une définition + deux appels = le bloc s'exécute deux fois."},
+    {type:"output", q:"Que va afficher ce code ?", code:'def annoncer(ville):\n    print(f"Prochaine étape : {ville}")\n\nannoncer("Florence")',
+     opts:['Prochaine étape : ville','Prochaine étape : Florence','annoncer("Florence")','Rien'], a:1,
+     exp:"Le paramètre ville reçoit \"Florence\" au moment de l'appel."},
+    {type:"output", q:"Et celui-ci, qu'affiche-t-il ?", code:'def doubler(n):\n    return n * 2\n\nresultat = doubler(21)\nprint(resultat)',
+     opts:['21','42','n * 2','Rien'], a:1,
+     exp:"doubler(21) renvoie 42, qu'on range dans resultat, puis qu'on affiche."},
+    {type:"qcm", q:"🐛 <b>Repère le bug</b> — Pourquoi rien ne s'affiche ?",
+     code:'def rappel():\n    print("Pense à réserver l\'hôtel !")',
+     opts:["La fonction est définie mais jamais appelée","print est mal écrit","Il manque un return","def ne marche pas avec print"], a:0,
+     exp:"def prépare la recette, mais personne ne l'a commandée ! Il manque rappel() à la fin."},
+    {type:"qcm", q:"Quelle est la vraie différence entre <code>print</code> et <code>return</code> ?",
+     opts:["print affiche pour l'humain, return renvoie une valeur au programme","Aucune, c'est pareil","return affiche en couleur","print est plus rapide"], a:0,
+     exp:"Une fonction avec return produit une valeur qu'on peut ranger, comparer, réutiliser. print ne fait que montrer."}
+  ]
+},
+{
+  id:"ch11", icon:"🎼", title:"Assembler des fonctions", sub:"lire un programme comme une partition",
+  obj:["lire un programme organisé en fonctions, en commençant par le bas (le chef d'orchestre)",
+       "utiliser la signature et la docstring d'une fonction comme un contrat, sans lire son corps",
+       "suivre « qui appelle qui » dans un petit programme"],
+  resume:["dans un fichier bien organisé : les fonctions en haut, le programme principal en bas",
+       "réflexe de lecture : commencer par le BAS, qui raconte l'histoire — puis plonger dans les fonctions au besoin",
+       "la signature + la docstring (\"\"\"...\"\"\" ) forment le contrat : ce qu'on donne, ce qu'on reçoit",
+       "faire confiance au contrat sans lire le corps, c'est l'« abstraction » — le super-pouvoir des architectes",
+       "un bon nom de fonction dit ce qu'elle fait : calculer_reste, afficher_programme..."],
+  fiches:[
+    {t:"Un programme bien rangé 🗄️",
+     html:`<p>Un vrai fichier Python ressemble rarement à une longue liste d'instructions. Il est organisé : les <b>fonctions d'abord</b>, le <b>programme principal à la fin</b>.</p>
+<pre><span class="k">def</span> <span class="f">preparer_message</span>(ville):
+    <span class="k">return</span> <span class="s">f"Direction {ville} !"</span>
+
+<span class="k">def</span> <span class="f">afficher_billet</span>(message):
+    <span class="f">print</span>(<span class="s">"🎫"</span>, message)
+
+<span class="c"># --- Programme principal ---</span>
+msg = preparer_message(<span class="s">"Rome"</span>)
+afficher_billet(msg)</pre>
+<p>Réflexe de lecture pro : <b>commence par le bas</b> ! Les 2 dernières lignes racontent toute l'histoire : « prépare un message, puis affiche le billet ».</p>
+<div class="tip">💡 Le haut du fichier, c'est la boîte à outils. Le bas, c'est le chef d'orchestre 🎼 qui décide de l'ordre. C'est LE réflexe pour aborder n'importe quel fichier de code sans se noyer.</div>`},
+    {t:"Le contrat d'une fonction 📜",
+     html:`<p>Les développeurs documentent leurs fonctions avec une <b>docstring</b> (un texte entre triples guillemets) :</p>
+<pre><span class="k">def</span> <span class="f">calculer_reste</span>(budget, depenses):
+    <span class="s">"""Retourne ce qui reste du budget (négatif si dépassé)."""</span>
+    <span class="k">return</span> budget - depenses</pre>
+<p>Signature + docstring = un <b>contrat</b> : je donne un budget et des dépenses → je reçois le reste. Tu peux <b>utiliser cette fonction sans jamais lire son corps</b>.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> c'est l'<b>abstraction</b>, le concept le plus important de ce chapitre. Un architecte ne lit pas les 10 000 lignes : il lit les contrats. Quand on travaillera ensemble, je te présenterai mes fonctions comme ça — et tu valideras les contrats.</div>`},
+    {t:"Qui appelle qui ? 🕵️",
+     html:`<p>Dernier réflexe : suivre la <b>chaîne d'appels</b>. Chaque appel est un détour : le programme y va, fait le travail, et <b>revient</b>.</p>
+<pre><span class="k">def</span> <span class="f">tva</span>(prix):
+    <span class="k">return</span> prix * <span class="n">1.2</span>
+
+<span class="k">def</span> <span class="f">prix_final</span>(prix, reduction):
+    <span class="k">return</span> tva(prix) - reduction   <span class="c"># ← appelle tva !</span>
+
+<span class="f">print</span>(prix_final(<span class="n">100</span>, <span class="n">20</span>))</pre>
+<p>Trace : <code>prix_final(100, 20)</code> → appelle <code>tva(100)</code> → qui renvoie 120 → puis 120 − 20 → <b>100</b>.</p>
+<div class="tip">💡 Les fonctions qui s'appellent entre elles, c'est normal et sain : chaque brique fait UNE chose, et les grandes briques assemblent les petites.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Par où commencer la lecture d'un fichier organisé en fonctions ?",
+     opts:["Par le bas : le programme principal raconte l'histoire","Par le haut, toujours","Par la fonction la plus longue","Par les commentaires uniquement"], a:0,
+     exp:"Le bas dit QUOI et dans quel ordre ; les fonctions du haut disent COMMENT. On lit le sommaire avant les chapitres !"},
+    {type:"qcm", q:"À quoi sert une docstring (le texte entre \"\"\" \"\"\") ?",
+     opts:["À décrire le contrat de la fonction pour qu'on puisse l'utiliser sans lire son code","À accélérer le programme","À afficher le texte à l'écran","À rien, Python l'interdit"], a:0,
+     exp:"C'est la documentation intégrée : ce que la fonction attend et ce qu'elle rend. L'outil n°1 de l'abstraction."},
+    {type:"qcm", q:"🔍 <b>Lecture de contrat</b> — Sans lire le corps, que fait <code>verifier_dispo(hotel, date)</code> d'après sa docstring <code>\"\"\"Retourne True si l'hôtel a une chambre à cette date.\"\"\"</code> ?",
+     opts:["Elle renvoie un booléen indiquant la disponibilité","Elle réserve la chambre","Elle affiche la liste des hôtels","Impossible à savoir"], a:0,
+     exp:"Le contrat suffit : entrées (hotel, date) → sortie (True/False). Tu viens d'utiliser l'abstraction !"},
+    {type:"output", q:"Trace la chaîne d'appels : qu'affiche ce code ?",
+     code:'def frais(prix):\n    return prix + 10\n\ndef total(prix, quantite):\n    return frais(prix) * quantite\n\nprint(total(20, 2))',
+     opts:['40','60','50','30'], a:1,
+     exp:"total(20, 2) → frais(20) = 30 → 30 × 2 = 60. Un détour par frais, puis retour."},
+    {type:"qcm", q:"🎯 <b>Scénario PO</b> — Tu veux savoir si mon app calcule bien le budget. Quelle approche d'architecte ?",
+     opts:["Lire la signature et la docstring de la fonction de calcul, puis tester ses résultats","Lire les 500 lignes du fichier une par une","Compter les print","Regarder la couleur du code"], a:0,
+     exp:"Contrat + vérification des résultats : c'est exactement la revue efficace. Le corps n'est lu que si un doute apparaît."},
+    {type:"qcm", q:"Quel nom de fonction respecte le mieux la règle « un nom qui dit ce qu'elle fait » ?",
+     opts:['calculer_cout_total','fonction2','truc','x'], a:0,
+     exp:"Un bon nom rend le programme principal lisible comme une phrase. fonction2, lui, cache tout."}
+  ]
+},
+{
+  id:"ch12", icon:"📦", title:"Modules et import", sub:"la boîte à outils… et celles du monde entier",
+  obj:["comprendre ce que fait import et lire ses variantes (import x, from x import y)",
+       "comprendre qu'un projet = plusieurs fichiers qui s'importent entre eux",
+       "situer les bibliothèques externes (pip) et leur rôle dans les vraies apps"],
+  resume:["import json charge un module ; on utilise ensuite json.loads(...)",
+       "from math import sqrt importe UN outil précis, utilisable sans préfixe",
+       "un projet réel = plusieurs fichiers .py qui s'importent (main.py, utils.py...)",
+       "pip install ajoute des bibliothèques créées par la communauté (requests, flask...)",
+       "règle d'or des vraies apps : ne pas réinventer ce qui existe déjà"],
+  fiches:[
+    {t:"import : ouvrir une boîte à outils 🧰",
+     html:`<p>Tu l'as croisé avec le JSON : <code>import</code> charge un <b>module</b> — une boîte d'outils prêts à l'emploi, fournie avec Python :</p>
+<pre><span class="k">import</span> math
+<span class="f">print</span>(math.sqrt(<span class="n">16</span>))   <span class="c"># 4.0 (racine carrée)</span>
+
+<span class="k">from</span> math <span class="k">import</span> sqrt
+<span class="f">print</span>(sqrt(<span class="n">25</span>))        <span class="c"># 5.0 — sans le préfixe math.</span></pre>
+<p>Deux styles : importer toute la boîte (<code>math.outil</code>) ou juste l'outil (<code>outil</code> direct).</p>
+<div class="tip">💡 Les import se lisent en haut du fichier : c'est la liste des dépendances. Avant même de lire le code, tu sais avec quoi il travaille !</div>`},
+    {t:"Un projet = plusieurs fichiers 🗂️",
+     html:`<p>Quand une app grandit, on ne garde pas tout dans un seul fichier. On range par thème, et les fichiers <b>s'importent entre eux</b> :</p>
+<pre><span class="c"># 📁 mon_app_voyage/
+#    main.py       ← le chef d'orchestre
+#    budget.py     ← les calculs d'argent
+#    programme.py  ← la gestion des étapes</span>
+
+<span class="c"># dans main.py :</span>
+<span class="k">from</span> budget <span class="k">import</span> calculer_reste
+<span class="k">from</span> programme <span class="k">import</span> afficher_etapes</pre>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> cette organisation en fichiers, c'est l'architecture visible à l'œil nu. Quand je te livrerai ton app voyage, tu ouvriras d'abord main.py, puis tu navigueras par les import — exactement comme un plan de bâtiment.</div>`},
+    {t:"Les bibliothèques du monde entier 🌍",
+     html:`<p>Le vrai superpouvoir de Python : des <b>centaines de milliers de bibliothèques</b> gratuites, créées par la communauté, qu'on installe avec <code>pip</code> :</p>
+<pre><span class="c"># dans le terminal (pas dans le code) :</span>
+pip install requests
+
+<span class="c"># puis dans le code :</span>
+<span class="k">import</span> requests
+meteo = requests.get(<span class="s">"https://api.meteo.example/rome"</span>)</pre>
+<p>Interroger une API météo, lire un fichier Excel, créer un site web : il y a une bibliothèque pour presque tout.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> ton app voyage utilisera requests (parler aux API) et sans doute flask ou fastapi (le serveur). En tant que PO, tu n'as pas à les coder — juste à savoir qu'elles existent et ce qu'elles font. Choisir les bonnes briques, c'est déjà de l'architecture.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Que fait la ligne <code>import json</code> ?",
+     opts:["Elle charge le module json pour utiliser ses outils (json.loads...)","Elle télécharge du JSON depuis internet","Elle convertit le fichier en JSON","Elle affiche du JSON"], a:0,
+     exp:"import rend la boîte à outils disponible dans ton fichier. Rien n'est téléchargé : le module est déjà là."},
+    {type:"output", q:"Que va afficher ce code ?", code:'from math import sqrt\nprint(sqrt(9))',
+     opts:['3.0','81','math.sqrt(9)','Une erreur : il manque math.'], a:0,
+     exp:"from math import sqrt permet d'utiliser sqrt directement, sans préfixe. Racine de 9 = 3.0."},
+    {type:"qcm", q:"En ouvrant un fichier, tu lis en haut : <code>import requests</code> et <code>import json</code>. Qu'en déduis-tu ?",
+     opts:["Ce code va parler à des services web et manipuler du JSON","Ce code dessine des graphiques","Ce code est cassé","Rien du tout"], a:0,
+     exp:"Les import annoncent la couleur : requests = appels réseau/API, json = données. Lire les import, c'est lire les intentions."},
+    {type:"qcm", q:"Dans un projet à plusieurs fichiers, à quoi sert <code>from budget import calculer_reste</code> ?",
+     opts:["À utiliser dans ce fichier la fonction calculer_reste définie dans budget.py","À supprimer le fichier budget.py","À calculer le budget automatiquement","À renommer le fichier"], a:0,
+     exp:"Les fichiers du projet se prêtent leurs fonctions via import. C'est ce qui permet de ranger le code par thème."},
+    {type:"qcm", q:"🎯 <b>Scénario PO</b> — Ton app doit lire des fichiers Excel. Le réflexe d'architecte ?",
+     opts:["Chercher une bibliothèque existante (pip) qui le fait déjà","Écrire soi-même un lecteur Excel complet","Convertir tous les Excel à la main","Abandonner la fonctionnalité"], a:0,
+     exp:"openpyxl le fait très bien depuis des années. Ne pas réinventer la roue : la règle d'or (et une grosse économie de budget 😄)."},
+    {type:"vf", q:"<code>pip install</code> s'écrit dans le terminal, pas à l'intérieur du code Python.", a:true,
+     exp:"Exact : pip est une commande d'installation. Le code, lui, se contente d'importer la bibliothèque une fois installée."}
+  ]
+},
+{
+  id:"tp3", icon:"🧪", title:"TP — Carnet de voyage v2", sub:"mission : valider un refactoring", tp:true,
+  obj:["lire un programme complet organisé en fonctions",
+       "vérifier qu'un refactoring n'a PAS changé le comportement (même résultats qu'avant)",
+       "utiliser les contrats (docstrings) pour naviguer dans le code"],
+  resume:["un refactoring réorganise le code SANS changer ce qu'il fait — même entrées, mêmes sorties",
+       "le programme principal se lit comme un sommaire : afficher, totaliser, vérifier",
+       "chaque fonction fait UNE chose et son nom le dit",
+       "tu as validé une livraison en lisant des contrats plutôt que chaque ligne : réflexe d'architecte acquis ! 🏛️"],
+  fiches:[
+    {t:"🧪 Ta mission",
+     html:`<p>Troisième itération ! Le carnet v1 fonctionnait, mais tout était en vrac dans un seul bloc. Tu m'as demandé :</p>
+<p>📋 <b>Ton cahier des charges v2 :</b><br>
+1️⃣ réorganiser le code en fonctions claires, prêtes à évoluer<br>
+2️⃣ <b>sans changer le comportement</b> : mêmes affichages, mêmes calculs qu'en v1<br>
+3️⃣ documenter chaque fonction (docstring)</p>
+<p>Cette opération a un nom que tu entendras souvent : un <b>refactoring</b>. Le code livré est sur la fiche suivante.</p>
+<div class="tip">💡 Pour valider un refactoring, l'architecte compare les COMPORTEMENTS : la v1 affichait le programme puis « Activités : 55 € — Reste : 445 € ». La v2 doit faire pareil. Vérifie-le en lisant le bas du fichier !</div>`},
+    {t:"📦 Le code livré",
+     html:`<pre><span class="c"># Carnet de voyage v2 — refactoring livré par Claude 🤖</span>
+
+<span class="k">def</span> <span class="f">afficher_programme</span>(etapes):
+    <span class="s">"""Affiche le programme jour par jour."""</span>
+    <span class="k">for</span> etape <span class="k">in</span> etapes:
+        <span class="f">print</span>(<span class="s">f"Jour {etape['jour']} : {etape['activite']} ({etape['cout']} €)"</span>)
+
+<span class="k">def</span> <span class="f">total_activites</span>(etapes):
+    <span class="s">"""Retourne la somme des coûts des activités."""</span>
+    total = <span class="n">0</span>
+    <span class="k">for</span> etape <span class="k">in</span> etapes:
+        total = total + etape[<span class="s">"cout"</span>]
+    <span class="k">return</span> total
+
+<span class="k">def</span> <span class="f">calculer_reste</span>(budget, depenses):
+    <span class="s">"""Retourne le budget restant (négatif si dépassé)."""</span>
+    <span class="k">return</span> budget - depenses
+
+<span class="c"># --- Programme principal ---</span>
+voyage = {
+    <span class="s">"destination"</span>: <span class="s">"Rome"</span>, <span class="s">"budget"</span>: <span class="n">500</span>,
+    <span class="s">"etapes"</span>: [
+        {<span class="s">"jour"</span>: <span class="n">1</span>, <span class="s">"activite"</span>: <span class="s">"Colisée"</span>, <span class="s">"cout"</span>: <span class="n">25</span>},
+        {<span class="s">"jour"</span>: <span class="n">2</span>, <span class="s">"activite"</span>: <span class="s">"Vatican"</span>, <span class="s">"cout"</span>: <span class="n">30</span>},
+        {<span class="s">"jour"</span>: <span class="n">3</span>, <span class="s">"activite"</span>: <span class="s">"Plage d'Ostie"</span>, <span class="s">"cout"</span>: <span class="n">0</span>}
+    ]
+}
+
+afficher_programme(voyage[<span class="s">"etapes"</span>])
+total = total_activites(voyage[<span class="s">"etapes"</span>])
+reste = calculer_reste(voyage[<span class="s">"budget"</span>], total)
+<span class="f">print</span>(<span class="s">f"Activités : {total} € — Reste : {reste} €"</span>)</pre>
+<div class="tip">🎯 Lis d'abord les 4 dernières lignes : elles racontent tout. Puis vérifie chaque contrat (docstring) si besoin.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Le programme principal (le bas du fichier) se lit comme un sommaire. Lequel ?",
+     opts:["Afficher le programme → totaliser les activités → calculer le reste → afficher le bilan","Calculer le reste → afficher → totaliser","Définir les fonctions → les supprimer","Impossible à dire sans lire les fonctions"], a:0,
+     exp:"Quatre lignes, quatre étapes claires. C'est exactement pour ça qu'on refactore : le bas du fichier devient lisible comme une phrase."},
+    {type:"output", q:"D'après son contrat et les données, que renvoie <code>total_activites(voyage[\"etapes\"])</code> ?",
+     opts:['55','445','500','[25, 30, 0]'], a:0,
+     exp:"25 + 30 + 0 = 55. Même calcul qu'en v1 — le refactoring n'a rien changé au comportement. ✔"},
+    {type:"output", q:"Et que renvoie <code>calculer_reste(500, 55)</code> ?",
+     opts:['445','455','545','-445'], a:0,
+     exp:"500 − 55 = 445. La docstring précise même le cas négatif : contrat complet."},
+    {type:"vf", q:"📋 <b>Validation de livraison</b> — Exigence 2 : « mêmes affichages et mêmes calculs qu'en v1 ». D'après ta lecture, le refactoring la respecte.", a:true,
+     exp:"Mêmes lignes « Jour X », même bilan « Activités : 55 € — Reste : 445 € ». Refactoring validé : comportement intact, organisation transformée. 👏"},
+    {type:"qcm", q:"🎯 <b>Mission PO</b> — Tu veux ajouter une alerte « ⚠️ Budget dépassé » quand le reste est négatif. Où la placer, le plus proprement ?",
+     opts:["Dans le programme principal, après le calcul de reste (un if reste < 0)","Au milieu de total_activites","Dans la docstring","Dans les données du voyage"], a:0,
+     exp:"C'est une règle d'affichage du bilan : sa place est dans le flux principal (ou une future fonction afficher_bilan). Surtout pas dans total_activites, qui doit rester une brique de calcul pure !"},
+    {type:"qcm", q:"Pour vérifier ce que fait <code>calculer_reste</code> sans lire son corps, tu utilises...",
+     opts:["Sa signature et sa docstring — son contrat","Le nombre de lignes","La couleur des variables","Le hasard"], a:0,
+     exp:"(budget, depenses) → « retourne le budget restant ». Contrat lu, fonction comprise, corps optionnel. Tu penses en architecte maintenant. 🏛️"}
+  ]
+}
+]},
+{ id:"u4", icon:"🏗️", title:"Chapitre 4 — L'architecture", desc:"Comment une vraie app est construite", lessons:[
+{
+  id:"ch13", icon:"🧬", title:"Classes et objets", sub:"le plan de fabrication des données",
+  obj:["reconnaître une class : le moule qui fabrique des objets",
+       "lire __init__ (le constructeur) et les attributs d'un objet",
+       "lire une méthode : une fonction qui appartient à l'objet"],
+  resume:["class Etape: définit un MOULE ; Etape(\"Rome\", 3) fabrique un OBJET",
+       "__init__ est le constructeur : il remplit les attributs à la création",
+       "self = « cet objet-là » : self.ville est l'attribut ville de l'objet courant",
+       "une méthode est une fonction attachée à l'objet : etape.cout_total()",
+       "une app définit souvent une classe par entité métier : Etape, Chanson, Utilisateur..."],
+  fiches:[
+    {t:"Un moule à objets 🧬",
+     html:`<p>Tu connais la liste de dictionnaires. Les vraies apps vont un cran plus loin : elles définissent des <b>classes</b> — des moules qui fabriquent des objets.</p>
+<pre><span class="k">class</span> <span class="f">Etape</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, ville, nuits):
+        self.ville = ville
+        self.nuits = nuits
+
+etape1 = Etape(<span class="s">"Rome"</span>, <span class="n">3</span>)     <span class="c"># le moule fabrique un objet</span>
+etape2 = Etape(<span class="s">"Florence"</span>, <span class="n">2</span>)
+<span class="f">print</span>(etape1.ville)   <span class="c"># Rome</span></pre>
+<p><code>__init__</code> est le <b>constructeur</b> : il s'exécute à la fabrication et remplit les <b>attributs</b> (<code>ville</code>, <code>nuits</code>). <code>self</code> veut simplement dire « cet objet-là ».</p>
+<div class="tip">💡 Un objet ressemble à un dictionnaire (<code>etape1.ville</code> ~ <code>etape1["ville"]</code>), mais en plus structuré : le moule garantit que chaque étape a bien ses champs.</div>`},
+    {t:"Les objets savent faire 🤹",
+     html:`<p>La vraie différence avec un dictionnaire : un objet embarque aussi ses <b>méthodes</b> — des fonctions qui lui appartiennent.</p>
+<pre><span class="k">class</span> <span class="f">Etape</span>:
+    <span class="k">def</span> <span class="f">__init__</span>(self, ville, nuits, prix_nuit):
+        self.ville = ville
+        self.nuits = nuits
+        self.prix_nuit = prix_nuit
+
+    <span class="k">def</span> <span class="f">cout_total</span>(self):
+        <span class="s">"""Retourne le coût d'hébergement de l'étape."""</span>
+        <span class="k">return</span> self.nuits * self.prix_nuit
+
+etape = Etape(<span class="s">"Rome"</span>, <span class="n">3</span>, <span class="n">90</span>)
+<span class="f">print</span>(etape.cout_total())   <span class="c"># 270</span></pre>
+<p>Un objet = <b>des données + des comportements</b>, emballés ensemble. La méthode utilise <code>self.nuits</code> : les propres données de l'objet.</p>
+<div class="tip">💡 Les contrats du Chapitre 3 s'appliquent tels quels : signature + docstring, et tu sais ce que fait <code>cout_total()</code> sans lire son corps.</div>`},
+    {t:"Où tu les croiseras 🗺️",
+     html:`<p>Dans le vrai code que je te livrerai, les classes seront partout — surtout pour les <b>modèles de données</b> :</p>
+<pre><span class="k">class</span> <span class="f">Chanson</span>:      <span class="c"># app musique</span>
+    <span class="c"># titre, artiste, duree, fichier...</span>
+
+<span class="k">class</span> <span class="f">Voyage</span>:       <span class="c"># app voyage</span>
+    <span class="c"># destination, budget, etapes...</span>
+
+<span class="k">class</span> <span class="f">Utilisateur</span>:  <span class="c"># les deux !</span>
+    <span class="c"># nom, email, preferences...</span></pre>
+<p>Ton réflexe de lecture : repérer les <code>class</code> d'un fichier te donne <b>la carte des entités</b> de l'app — de quoi elle parle, avant même de lire la logique.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> ces classes-modèles correspondront souvent... aux tables de la base de données (leçon 4 de ce chapitre 😉). Entité métier → classe → table : le même concept sous trois formes.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Quel mot-clé définit un « moule à objets » en Python ?",
+     opts:['class','def','object','mould'], a:0,
+     exp:"class définit le moule ; def définit les fonctions (et les méthodes à l'intérieur des classes)."},
+    {type:"output", q:"Que va afficher ce code ?",
+     code:'class Ville:\n    def __init__(self, nom, pays):\n        self.nom = nom\n        self.pays = pays\n\nv = Ville("Lisbonne", "Portugal")\nprint(v.pays)',
+     opts:['Lisbonne','Portugal','nom','Une erreur'], a:1,
+     exp:"Le constructeur range \"Portugal\" dans l'attribut pays, qu'on lit avec v.pays."},
+    {type:"qcm", q:"Dans une méthode, que désigne <code>self</code> ?",
+     opts:["L'objet sur lequel la méthode est appelée","Le nom de la classe","Une variable au hasard","Le fichier Python"], a:0,
+     exp:"self = « cet objet-là ». Dans etape.cout_total(), self est etape : self.nuits lit SES nuits."},
+    {type:"output", q:"D'après la classe de la fiche 2, que renvoie <code>Etape(\"Nice\", 2, 80).cout_total()</code> ?",
+     opts:['160','82','80','Une erreur'], a:0,
+     exp:"2 nuits × 80 € = 160. La méthode travaille avec les données de SON objet."},
+    {type:"qcm", q:"🐛 <b>Repère le bug</b> — <code>print(etape.prix)</code> provoque <code>AttributeError: 'Etape' object has no attribute 'prix'</code>. Pourquoi ?",
+     opts:["L'attribut s'appelle prix_nuit, pas prix","Il manque des guillemets","Etape n'est pas une classe","print ne marche pas sur les objets"], a:0,
+     exp:"AttributeError = l'objet n'a pas cet attribut. Un cousin de KeyError, version objets — ton top 5 des erreurs devient un top 6 !"},
+    {type:"vf", q:"Dans une vraie app, on définit souvent une classe par entité métier (Chanson, Etape, Utilisateur...).", a:true,
+     exp:"Exactement ! Repérer les classes d'un projet = lire la carte de ses entités. Et bientôt : ses tables en base."}
+  ]
+},
+{
+  id:"ch14", icon:"🌐", title:"Client et serveur", sub:"les deux moitiés d'une vraie app",
+  obj:["distinguer frontend (chez l'utilisateur) et backend (sur le serveur)",
+       "lire le dialogue requête → réponse",
+       "décider en architecte : quelle fonctionnalité vit de quel côté ?"],
+  resume:["frontend = ce qui s'affiche, tourne sur TON appareil ; backend = logique + données, sur un serveur",
+       "le dialogue : le client envoie une REQUÊTE, le serveur renvoie une RÉPONSE (souvent du JSON)",
+       "données partagées entre appareils ou utilisateurs → forcément côté serveur",
+       "PyQuest est 100 % frontend ; ton app voyage aura les deux moitiés",
+       "dessiner « qui parle à qui » est le premier geste de l'architecte"],
+  fiches:[
+    {t:"Les deux moitiés d'une app 🌗",
+     html:`<p>Une vraie app se compose presque toujours de deux moitiés :</p>
+<p>📱 Le <b>frontend</b> : ce que tu vois et touches. Il tourne <b>sur ton appareil</b> (HTML/JS dans le navigateur, ou app mobile).<br><br>
+🖥️ Le <b>backend</b> : la logique et les données. Il tourne <b>sur un serveur</b>, quelque part sur internet, et sert tous les utilisateurs à la fois.</p>
+<div class="tip">💡 PyQuest est 100 % frontend : tout tourne sur ton Pixel, ta progression reste dans TON navigateur. C'est pour ça qu'elle ne te suit pas d'un appareil à l'autre... et c'est exactement le problème qu'un backend résout.</div>`},
+    {t:"Requête → réponse 📨",
+     html:`<p>Les deux moitiés dialoguent toujours de la même façon :</p>
+<pre><span class="c">📱 Frontend                    🖥️ Backend
+   │                              │
+   │ ── requête : "les étapes ?" ──▶
+   │                              │ (lit la base,
+   │                              │  applique les règles)
+   ◀── réponse : JSON des étapes ──
+   │                              │</span></pre>
+<p>Le client <b>demande</b>, le serveur <b>répond</b> — très souvent en JSON (que tu sais lire depuis le Chapitre 2 !). Chaque écran de ton app, c'est une ou plusieurs de ces allers-retours.</p>
+<div class="tip">💡 Quand ton app « charge »... elle attend une réponse. Quand elle affiche « erreur réseau », une requête n'a pas abouti. Ce vocabulaire, c'est celui de tous tes futurs diagnostics.</div>`},
+    {t:"Où vit quoi ? La décision d'architecte 🧭",
+     html:`<p>Pour chaque fonctionnalité, l'architecte tranche : frontend ou backend ?</p>
+<p>📱 <b>Frontend</b> : l'affichage, la navigation, les petites validations immédiates (« ce champ est vide ! »).<br><br>
+🖥️ <b>Backend</b> : tout ce qui est <b>partagé</b> (tes voyages visibles sur ton téléphone ET ta tablette), <b>sensible</b> (mots de passe, paiements) ou <b>lourd</b> (recherche dans 10 000 chansons).</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> « je veux retrouver mes playlists sur tous mes appareils » = il faut un backend. « je veux que le bouton devienne vert au clic » = frontend. Quand on concevra tes apps, on jouera à ce jeu-là ensemble, fonctionnalité par fonctionnalité.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Où s'exécute le frontend d'une app ?",
+     opts:["Sur l'appareil de l'utilisateur (navigateur, téléphone)","Sur le serveur","Dans la base de données","Chez l'opérateur téléphonique"], a:0,
+     exp:"Le frontend vit chez l'utilisateur. Le backend, lui, tourne sur un serveur et sert tout le monde."},
+    {type:"qcm", q:"Ton app musique doit montrer TES playlists sur ton téléphone ET ta tablette. Où doivent vivre les playlists ?",
+     opts:["Côté backend (serveur + base de données)","Dans le navigateur du téléphone","Sur un post-it","Dans le frontend de la tablette"], a:0,
+     exp:"Données partagées entre appareils = serveur obligatoire. Si elles restaient dans un navigateur, l'autre appareil ne les verrait jamais."},
+    {type:"qcm", q:"Dans le dialogue client/serveur, qui envoie la requête et qui répond ?",
+     opts:["Le client demande, le serveur répond","Le serveur demande, le client répond","Les deux demandent en même temps","Personne, tout est automatique"], a:0,
+     exp:"Toujours ce sens-là : le frontend (client) interroge, le backend (serveur) répond — souvent en JSON."},
+    {type:"vf", q:"PyQuest (cette app !) fonctionne entièrement sur ton téléphone, sans backend.", a:true,
+     exp:"Oui : 100 % frontend. C'est pour ça que ta progression vit dans TON navigateur — et qu'il existe le code PYQ2 pour la transporter à la main !"},
+    {type:"qcm", q:"🎯 <b>Scénario PO</b> — « L'app affiche “erreur réseau” quand j'ouvre mes étapes. » Que s'est-il probablement passé ?",
+     opts:["La requête vers le serveur n'a pas abouti (pas de réponse)","Le téléphone est cassé","Le frontend a supprimé la base","Python n'est plus installé"], a:0,
+     exp:"« Erreur réseau » = le dialogue requête→réponse a échoué quelque part. Diagnostic immédiat : le problème est entre le client et le serveur, pas dans l'affichage."},
+    {type:"qcm", q:"Quelle fonctionnalité peut vivre 100 % côté frontend ?",
+     opts:["Surligner en rouge un champ obligatoire laissé vide","Le paiement des réservations","La synchronisation entre appareils","Le stockage des comptes utilisateurs"], a:0,
+     exp:"Une validation d'affichage immédiate reste côté client. Paiement, comptes, synchro : trop sensible ou trop partagé → serveur."}
+  ]
+},
+{
+  id:"ch15", icon:"📡", title:"Les API et HTTP", sub:"le menu que le serveur propose",
+  obj:["lire une API comme un menu d'endpoints (GET /etapes, POST /etapes...)",
+       "connaître les verbes HTTP : GET lire, POST créer, PUT modifier, DELETE supprimer",
+       "décoder les codes de réponse : 200, 201, 400, 404, 500"],
+  resume:["une API = la liste des demandes que le serveur accepte (ses « endpoints »)",
+       "les verbes : GET = lire, POST = créer, PUT/PATCH = modifier, DELETE = supprimer",
+       "les codes : 200 OK · 201 créé · 400 demande invalide · 404 introuvable · 500 erreur serveur",
+       "4xx = le client s'est trompé ; 5xx = le serveur a un problème",
+       "en Python : requests.get(url) envoie la requête, .json() lit la réponse"],
+  fiches:[
+    {t:"Le menu du serveur 📋",
+     html:`<p>Comment le frontend sait-il quoi demander ? Le backend publie son <b>API</b> : la liste officielle des demandes qu'il accepte — ses <b>endpoints</b>.</p>
+<pre><span class="c"># L'API du carnet de voyage :</span>
+GET    /api/etapes        <span class="c"># lire la liste des étapes</span>
+POST   /api/etapes        <span class="c"># créer une nouvelle étape</span>
+PUT    /api/etapes/4      <span class="c"># modifier l'étape n°4</span>
+DELETE /api/etapes/4      <span class="c"># supprimer l'étape n°4</span></pre>
+<p>Chaque ligne = un <b>verbe</b> (l'intention) + un <b>chemin</b> (la ressource). Quatre verbes couvrent presque tout : lire, créer, modifier, supprimer.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> concevoir l'API, c'est écrire ce menu — et c'est une tâche de PO/architecte ! « De quoi mon frontend aura-t-il besoin ? » Quand on fera ton app, on écrira ce menu ensemble avant la première ligne de code.</div>`},
+    {t:"Les codes de réponse 🚥",
+     html:`<p>Chaque réponse du serveur arrive avec un <b>code</b> qui résume comment ça s'est passé :</p>
+<pre><span class="c">200 OK          → tout va bien, voici les données
+201 Created     → création réussie
+400 Bad Request → ta demande est mal formée
+404 Not Found   → cette ressource n'existe pas
+500 Server Error→ le serveur a planté (pas toi !)</span></pre>
+<p>La règle mnémotechnique : <b>4xx = le client s'est trompé</b> (mauvaise adresse, données invalides), <b>5xx = le serveur a un problème</b> (un bug côté backend).</p>
+<div class="tip">💡 Le fameux « Erreur 404 » de ton navigateur, c'est exactement ça. Et un 500 dans ton app = un bug à me signaler côté serveur — tu sauras même dire lequel des deux mondes a fauté !</div>`},
+    {t:"Lire un échange complet 🔎",
+     html:`<p>Assemblons tout — voici un échange réel, côté code Python :</p>
+<pre><span class="k">import</span> requests
+
+reponse = requests.get(<span class="s">"https://api.meteo.example/rome"</span>)
+<span class="f">print</span>(reponse.status_code)   <span class="c"># 200</span>
+donnees = reponse.json()      <span class="c"># le JSON → données Python</span>
+<span class="f">print</span>(donnees[<span class="s">"temp"</span>])       <span class="c"># 28</span></pre>
+<p>Requête GET → code 200 → JSON → navigation par clés. Chapitres 2, 3 et 4 réunis en cinq lignes : tu sais déjà tout lire !</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> ton app voyage fera exactement ça pour la météo, les cartes, les prix des vols... Les API externes sont les prises électriques sur lesquelles ton app se branche.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Quel verbe HTTP utilise-t-on pour LIRE des données sans rien modifier ?",
+     opts:['GET','POST','DELETE','PUT'], a:0,
+     exp:"GET = lecture. POST crée, PUT/PATCH modifie, DELETE supprime. Quatre verbes, tout le CRUD."},
+    {type:"qcm", q:"Ton app reçoit un code <code>404</code> en demandant <code>GET /api/etapes/99</code>. Ça veut dire...",
+     opts:["L'étape 99 n'existe pas","Le serveur a planté","La création a réussi","Le WiFi est coupé"], a:0,
+     exp:"404 Not Found : la ressource demandée n'existe pas. Un 4xx = la demande du client est en cause, pas le serveur."},
+    {type:"qcm", q:"Et un code <code>500</code> ?",
+     opts:["Un bug côté serveur — à signaler au développeur (ou à l'IA 😉)","Une erreur du client","Tout va bien","Le serveur est en vacances"], a:0,
+     exp:"5xx = le serveur a un problème interne. Ton rapport de bug parfait (leçon erreurs !) fera merveille ici."},
+    {type:"qcm", q:"🎯 <b>Mission architecte</b> — Le frontend doit permettre d'AJOUTER une étape au voyage. Quel endpoint doit exister ?",
+     opts:['POST /api/etapes','GET /api/etapes','DELETE /api/etapes','GET /api/ajouter'], a:0,
+     exp:"Créer = POST sur la collection. Tu viens d'écrire ta première ligne de menu d'API !"},
+    {type:"output", q:"Que va afficher ce code (l'API répond {\"temp\": 31}) ?",
+     code:'import requests\nreponse = requests.get("https://api.meteo.example/nice")\ndonnees = reponse.json()\nprint(donnees["temp"])',
+     opts:['31','{"temp": 31}','temp','200'], a:0,
+     exp:".json() transforme la réponse en dictionnaire Python, et [\"temp\"] lit la valeur : 31."},
+    {type:"vf", q:"Concevoir la liste des endpoints d'une API est une décision d'architecture qui se prend AVANT de coder.", a:true,
+     exp:"Oui ! Le menu de l'API est un contrat entre frontend et backend. Le définir d'abord évite de coder deux moitiés incompatibles."}
+  ]
+},
+{
+  id:"ch16", icon:"🗄️", title:"La base de données", sub:"la mémoire qui n'oublie jamais",
+  obj:["comprendre pourquoi une base de données (persistance, partage, fiabilité)",
+       "lire un schéma : tables, colonnes typées, lignes, clé primaire",
+       "déchiffrer un SQL simple : SELECT, INSERT, WHERE — et le lien avec le CRUD"],
+  resume:["les variables meurent avec le programme ; la base de données, elle, n'oublie rien",
+       "une table = des colonnes typées + des lignes ; la clé primaire (id) identifie chaque ligne",
+       "SELECT lit, INSERT crée, UPDATE modifie, DELETE supprime — le CRUD, comme les verbes HTTP !",
+       "WHERE filtre : SELECT * FROM etapes WHERE cout < 30",
+       "SQLite = une base dans un simple fichier, parfaite pour démarrer ; PostgreSQL pour du costaud",
+       "concevoir le schéma (quelles tables, quelles colonnes) = LA décision d'architecte"],
+  fiches:[
+    {t:"La mémoire qui survit 💾",
+     html:`<p>Souviens-toi : les variables sont la mémoire du programme... mais elles <b>meurent</b> quand il s'arrête. Une app a besoin d'une mémoire <b>permanente</b> : la <b>base de données</b>.</p>
+<p>Elle range les données en <b>tables</b> — imagine des tableaux stricts :</p>
+<pre><span class="c">table etapes
+┌────┬───────────┬───────┬──────┐
+│ id │ ville     │ nuits │ cout │
+├────┼───────────┼───────┼──────┤
+│ 1  │ Rome      │ 3     │ 25   │
+│ 2  │ Florence  │ 2     │ 30   │
+└────┴───────────┴───────┴──────┘</span></pre>
+<p>Chaque <b>colonne</b> a un type (comme tes variables !), chaque <b>ligne</b> est un enregistrement, et l'<code>id</code> — la <b>clé primaire</b> — identifie chaque ligne à coup sûr.</p>
+<div class="tip">💡 Une ligne de table ↔ un dictionnaire ↔ un objet d'une classe. C'est la MÊME étape de voyage, sous trois costumes différents selon l'endroit du code.</div>`},
+    {t:"Lire du SQL simple 🔍",
+     html:`<p>On parle aux bases de données en <b>SQL</b>. Bonne nouvelle : ça se lit presque comme de l'anglais.</p>
+<pre><span class="c">-- lire : quelles villes pour moins de 30 € ?</span>
+<span class="k">SELECT</span> ville, cout <span class="k">FROM</span> etapes <span class="k">WHERE</span> cout < <span class="n">30</span>;
+
+<span class="c">-- créer une nouvelle étape :</span>
+<span class="k">INSERT INTO</span> etapes (ville, nuits, cout)
+<span class="k">VALUES</span> (<span class="s">'Venise'</span>, <span class="n">2</span>, <span class="n">40</span>);</pre>
+<p>Les 4 opérations — <code>SELECT</code> lire, <code>INSERT</code> créer, <code>UPDATE</code> modifier, <code>DELETE</code> supprimer — forment le <b>CRUD</b>... exactement comme GET, POST, PUT et DELETE ! Toute la chaîne parle le même langage.</p>
+<div class="tip">💡 Tu n'écriras pas de SQL : tu sauras le RECONNAÎTRE dans mon code et vérifier qu'un WHERE filtre bien ce que ta spec demandait. C'est largement suffisant pour piloter.</div>`},
+    {t:"Choisir sa base : décision d'architecte 🏛️",
+     html:`<p>Deux grandes familles pour démarrer :</p>
+<p>🪶 <b>SQLite</b> : toute la base tient dans <b>un fichier</b> (voyage.db). Zéro installation, parfaite pour un prototype ou une app perso.<br><br>
+🏢 <b>PostgreSQL / MySQL</b> : un vrai serveur de base, pour beaucoup d'utilisateurs simultanés.</p>
+<p>Et le pont avec la leçon classes : les frameworks utilisent souvent un <b>ORM</b> — une classe Python par table, et l'outil traduit en SQL tout seul. <code>class Etape</code> ↔ <code>table etapes</code> : boucle bouclée !</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> le SCHÉMA (quelles tables ? quelles colonnes ? quels types ?) est la décision qui engage le plus l'avenir — bien plus dur à changer qu'un bouton. C'est LE sujet sur lequel je te consulterai sérieusement quand on fera ton app voyage."</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Pourquoi une app a-t-elle besoin d'une base de données plutôt que de simples variables ?",
+     opts:["Les variables disparaissent quand le programme s'arrête ; la base, non","Les bases sont plus jolies","Les variables sont payantes","Python interdit les variables sur serveur"], a:0,
+     exp:"Persistance ! La base survit aux redémarrages, aux mises à jour, et se partage entre tous les utilisateurs."},
+    {type:"qcm", q:"Dans la table etapes, à quoi sert la colonne <code>id</code> (clé primaire) ?",
+     opts:["À identifier chaque ligne de façon unique","À compter les visiteurs","À stocker le prix","À rien, c'est décoratif"], a:0,
+     exp:"La clé primaire permet de viser une ligne précise : « modifie l'étape 4 » → UPDATE ... WHERE id = 4. C'est aussi le /4 de PUT /api/etapes/4 !"},
+    {type:"output", q:"🔍 <b>Lecture de SQL</b> — Que renvoie cette requête sur la table de la fiche 1 ?",
+     code:"SELECT ville FROM etapes WHERE cout < 30;",
+     opts:['Rome','Rome et Florence','Florence','Toutes les colonnes'], a:0,
+     exp:"Seule Rome (25 €) passe le filtre cout < 30. Florence coûte 30, et 30 < 30 est faux — le même piège que range() !"},
+    {type:"qcm", q:"Le CRUD de la base répond aux verbes HTTP. Quelle paire est correcte ?",
+     opts:["POST ↔ INSERT (créer)","GET ↔ DELETE (lire)","PUT ↔ SELECT (modifier)","DELETE ↔ INSERT (supprimer)"], a:0,
+     exp:"POST crée côté API, INSERT crée côté base. Toute la chaîne — frontend, API, SQL — décline les 4 mêmes opérations."},
+    {type:"qcm", q:"🎯 <b>Mission architecte</b> — Table <code>chansons</code> de ton app musique : quel ensemble de colonnes est le plus sensé ?",
+     opts:["id, titre, artiste, duree, fichier","couleur, humeur, météo","id, id2, id3, id4","titre uniquement"], a:0,
+     exp:"Une clé primaire + les attributs métier utiles. Remarque : c'est exactement la classe Chanson de la leçon 1, version table !"},
+    {type:"vf", q:"SQLite stocke toute la base dans un simple fichier — un bon choix pour démarrer un projet.", a:true,
+     exp:"Oui : zéro installation, facile à sauvegarder. On migre vers PostgreSQL quand les utilisateurs se multiplient. Ton app voyage commencera sans doute là."}
+  ]
+},
+{
+  id:"tp4", icon:"🧪", title:"TP — Carnet de voyage v3", sub:"mission : lire une architecture complète", tp:true,
+  obj:["lire le plan d'architecture d'une app 3 couches : frontend, API, base",
+       "suivre une donnée de bout en bout : de l'écran au SQL et retour",
+       "localiser dans QUELLE couche se fait une évolution"],
+  resume:["3 couches : 📱 frontend (affiche) ↔ 🖥️ API backend (logique) ↔ 🗄️ base (mémoire)",
+       "un affichage = souvent : requête GET → SELECT → JSON → écran",
+       "une évolution se découpe par couche : base (colonne), backend (endpoint), frontend (affichage)",
+       "tu sais maintenant lire le plan d'une vraie app — celle qu'on construira ensemble 🏛️"],
+  fiches:[
+    {t:"🧪 Ta mission",
+     html:`<p>Grande étape ! Tu m'as demandé la vraie transformation :</p>
+<p>📋 <b>Ton cahier des charges v3 :</b><br>
+1️⃣ mes voyages accessibles depuis TOUS mes appareils<br>
+2️⃣ un backend avec une API et une base de données<br>
+3️⃣ le frontend mobile interroge l'API (plus de données enfermées dans le navigateur)</p>
+<p>Je te livre le <b>plan d'architecture</b> et un extrait du backend. Ta mission : vérifier que le plan tient debout et savoir naviguer dedans.</p>
+<div class="tip">💡 Tout ce chapitre est dans ce TP : le frontend parle à l'API (leçons 2-3), l'API parle à la base (leçon 4), et les étapes sont des objets (leçon 1). Le grand assemblage final !</div>`},
+    {t:"📦 Le plan livré",
+     html:`<pre><span class="c">┌─────────────────────────────────┐
+│ 📱 FRONTEND (HTML/JS installé)  │
+│    écran "Mon voyage"           │
+└───────────┬─────────────────────┘
+            │ GET /api/etapes
+            ▼
+┌─────────────────────────────────┐
+│ 🖥️ BACKEND Python (Flask)       │
+│    applique les règles métier   │
+└───────────┬─────────────────────┘
+            │ SELECT * FROM etapes
+            ▼
+┌─────────────────────────────────┐
+│ 🗄️ BASE SQLite (voyage.db)      │
+│    table etapes                 │
+└─────────────────────────────────┘</span></pre>
+<p>Et l'extrait du backend :</p>
+<pre><span class="c"># backend/app.py (extrait)</span>
+@app.get(<span class="s">"/api/etapes"</span>)
+<span class="k">def</span> <span class="f">lister_etapes</span>():
+    <span class="s">"""Renvoie toutes les étapes du voyage en JSON."""</span>
+    lignes = db.execute(<span class="s">"SELECT * FROM etapes"</span>)
+    <span class="k">return</span> jsonify(lignes)   <span class="c"># → réponse 200 + JSON</span></pre>
+<div class="tip">🎯 Suis le chemin d'une étape : elle dort dans la table → le SELECT la réveille → jsonify l'habille en JSON → le frontend l'affiche. Aller-retour complet !</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Combien de couches dans cette architecture, et lesquelles ?",
+     opts:["3 : frontend, backend/API, base de données","2 : téléphone et WiFi","4 : HTML, CSS, JS, Python","1 : tout est dans le navigateur"], a:0,
+     exp:"Le trio classique des apps : l'écran, la logique, la mémoire. Tu le retrouveras partout, de ton carnet de voyage à Spotify."},
+    {type:"qcm", q:"🔍 <b>Lecture de plan</b> — Le frontend veut afficher les étapes. Quel est le chemin complet ?",
+     opts:["GET /api/etapes → SELECT sur la base → JSON → affichage","SELECT direct depuis le téléphone → écran","Le frontend lit voyage.db en Bluetooth","L'utilisateur tape le SQL à la main"], a:0,
+     exp:"Le frontend ne touche JAMAIS la base directement : il passe par l'API, qui seule parle SQL. C'est ce qui protège les données et les règles."},
+    {type:"qcm", q:"Que fait la ligne <code>@app.get(\"/api/etapes\")</code> au-dessus de la fonction ?",
+     opts:["Elle déclare : « cette fonction répond aux requêtes GET /api/etapes »","Elle supprime l'endpoint","Elle teste la fonction","Elle affiche l'URL à l'écran"], a:0,
+     exp:"C'est le branchement endpoint → fonction. Chaque ligne du menu de l'API pointe vers une fonction Python comme celle-ci."},
+    {type:"qcm", q:"🎯 <b>Mission PO</b> — Tu veux afficher la météo de chaque étape. Quelles couches sont touchées ?",
+     opts:["Les trois : colonne ou appel météo côté données, endpoint enrichi côté backend, affichage côté frontend","Seulement le frontend","Seulement la base","Aucune, la météo vient toute seule"], a:0,
+     exp:"Une vraie évolution se découpe par couche — et maintenant TU sais faire ce découpage. C'est exactement ainsi qu'on rédigera les specs de ton app."},
+    {type:"qcm", q:"Le frontend appelle <code>GET /api/etape</code> (sans le s final) et reçoit un 404. Diagnostic ?",
+     opts:["L'endpoint s'appelle /api/etapes : mauvaise adresse côté client","Le serveur a planté (500)","La base est vide","Le JSON est cassé"], a:0,
+     exp:"404 = ressource inconnue, et 4xx = erreur côté client. Une lettre d'écart suffit — ton œil de relecteur l'a vu !"},
+    {type:"vf", q:"Grâce à la base de données, les étapes survivent même si l'app et le serveur redémarrent.", a:true,
+     exp:"C'est toute la promesse de la persistance — et l'exigence 1 de ton cahier des charges : tes données te suivent partout. Livraison conforme ! 🎉"}
+  ]
+}
+]},
+{ id:"u5", icon:"🎯", title:"Chapitre 5 — Piloter l'IA", desc:"Le métier : spécifier, versionner, tester, déployer", lessons:[
+{
+  id:"ch17", icon:"📝", title:"Du besoin à la spec", sub:"l'IA code exactement ce que tu spécifies",
+  obj:["écrire une user story complète : rôle, besoin, objectif",
+       "transformer un besoin en critères d'acceptation testables",
+       "découper un projet en itérations livrables (MVP d'abord !)"],
+  resume:["une spec floue produit une app floue — la précision est TON travail",
+       "user story : « En tant que [rôle], je veux [action] afin de [bénéfice] »",
+       "critère d'acceptation = une phrase VÉRIFIABLE : on peut répondre oui ou non",
+       "découper petit : un MVP livrable, puis des itérations — comme PyQuest v1, v2, v3...",
+       "chaque itération se termine par TA revue de livraison"],
+  fiches:[
+    {t:"L'IA code ce que tu spécifies ✍️",
+     html:`<p>Règle d'or du développement avec une IA : la qualité de l'app dépend de la qualité de la <b>demande</b>. Compare :</p>
+<p>❌ « Fais-moi un truc pour gérer mes voyages »<br>
+✅ « En tant que <b>voyageur</b>, je veux <b>ajouter une étape (ville, dates, budget)</b> afin de <b>construire mon programme jour par jour</b> »</p>
+<p>Ce format s'appelle une <b>user story</b> : un rôle, une action, un bénéfice. Le rôle dit pour qui, l'action dit quoi, le bénéfice dit pourquoi — et ce pourquoi m'aide à trancher tous les petits choix d'implémentation.</p>
+<div class="tip">🏗️ <b>Dans notre duo :</b> tu écris les user stories, je les code. Plus elles sont nettes, moins on fait d'allers-retours. C'est LE levier n°1 de ta productivité de PO.</div>`},
+    {t:"Les critères d'acceptation ✅",
+     html:`<p>Une user story dit le but ; les <b>critères d'acceptation</b> disent quand c'est <b>fini</b>. Leur secret : être <b>vérifiables</b> — on peut répondre oui ou non.</p>
+<p>Pour « ajouter une étape » :</p>
+<p>1️⃣ Quand j'ajoute une étape avec ville et coût, elle apparaît dans la liste<br>
+2️⃣ Le total du voyage se met à jour immédiatement<br>
+3️⃣ Si le coût n'est pas un nombre, un message s'affiche (pas de plantage !)<br>
+4️⃣ Les étapes sont toujours là après redémarrage</p>
+<div class="tip">💡 Remarque le n°3 : ton savoir des leçons erreurs et try/except devient une EXIGENCE que tu poses. Et le n°4, c'est la persistance du Chapitre 4. Tout se connecte !</div>`},
+    {t:"Découper en itérations 🍰",
+     html:`<p>Erreur classique : tout demander d'un coup. Résultat : un tunnel de trois semaines et une livraison invérifiable. La parade : le <b>MVP</b> (produit minimum viable), puis des itérations.</p>
+<pre><span class="c">Itération 1 (MVP) : voir la liste des étapes
+Itération 2       : ajouter / supprimer une étape
+Itération 3       : totaux et alertes budget
+Itération 4       : la météo par étape</span></pre>
+<p>Chaque itération est <b>petite, livrable, vérifiable</b> — et se conclut par ta revue. Ça te rappelle quelque chose ? C'est exactement l'histoire de PyQuest : v1, v2, v3... 😄</p>
+<div class="tip">🏗️ <b>Dans notre duo :</b> les petites itérations sont encore plus cruciales avec une IA — je livre vite, donc autant vérifier souvent. Petit lot = erreur détectée tôt = correction facile.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Quelle user story est bien formée ?",
+     opts:["« En tant que voyageur, je veux trier mes étapes par date afin de suivre mon itinéraire »","« Fais du tri quelque part »","« L'app doit être mieux »","« Ajoute des trucs de date »"], a:0,
+     exp:"Rôle + action + bénéfice : tout y est. Les trois autres laissent l'IA deviner — et deviner, c'est se tromper."},
+    {type:"qcm", q:"Lequel de ces critères d'acceptation est réellement VÉRIFIABLE ?",
+     opts:["« Quand je supprime une étape, elle disparaît de la liste et du total »","« L'app doit être intuitive »","« Le code doit être joli »","« Ça doit marcher bien »"], a:0,
+     exp:"On peut le tester et répondre oui/non. « Intuitif », « joli », « bien » : invérifiables — à bannir de tes specs."},
+    {type:"qcm", q:"🎯 <b>Scénario PO</b> — App musique, tout est à faire. Quelle PREMIÈRE itération (MVP) ?",
+     opts:["Afficher la liste de mes chansons","La synchronisation multi-appareils","Les recommandations par IA","Le mode karaoké en réalité augmentée"], a:0,
+     exp:"Le MVP = la plus petite chose utile et vérifiable. Voir ses chansons d'abord ; le karaoké AR... plus tard. 😄"},
+    {type:"vf", q:"Une spécification floue a de bonnes chances de produire une app qui ne correspond pas au besoin.", a:true,
+     exp:"L'IA optimise ce qu'on lui demande. Flou en entrée, flou en sortie — la précision de la spec, c'est TON code à toi."},
+    {type:"qcm", q:"🔍 <b>Revue de spec</b> — « En tant que voyageur, je veux exporter mon voyage. » Qu'est-ce qui MANQUE le plus ?",
+     opts:["Le format et l'usage : exporter en quoi (PDF ? JSON ?) et pour quoi faire","Le nom du voyageur","La couleur du bouton","Rien, elle est parfaite"], a:0,
+     exp:"Sans le bénéfice ni le format, je dois deviner. « ...en PDF afin de l'imprimer pour le voyage » et tout devient clair."},
+    {type:"qcm", q:"Pourquoi découper en PETITES itérations avec une IA qui code vite ?",
+     opts:["Pour vérifier souvent et détecter les erreurs tôt","Pour facturer plus","Parce que l'IA ne sait pas faire grand","Pour ralentir le projet"], a:0,
+     exp:"Livraison rapide + revue fréquente = dérive impossible. Le tunnel de 3 semaines, lui, se termine toujours en mauvaise surprise."}
+  ]
+},
+{
+  id:"ch18", icon:"🌳", title:"Git et les versions", sub:"la machine à remonter le temps du projet",
+  obj:["comprendre le commit : une photo datée et commentée du projet",
+       "comprendre branches et pull requests — et TON rôle de relecteur",
+       "situer GitHub dans ton flux : dépôt, historique, Pages"],
+  resume:["un commit = une photo du projet + un message qui explique POURQUOI",
+       "l'historique des commits raconte la vie du projet — et permet de revenir en arrière",
+       "une branche = un chantier isolé ; on fusionne quand c'est validé",
+       "une pull request (PR) = « voici mes changements, relis et approuve » → c'est TOI le relecteur",
+       "GitHub héberge le dépôt, l'historique, les PR... et déploie ton app (Pages)"],
+  fiches:[
+    {t:"Le commit : une photo du projet 📸",
+     html:`<p>Tu déploies déjà sur GitHub — voici ce qui se passe en coulisses. <b>Git</b> enregistre l'histoire du projet en <b>commits</b> : des photos complètes, datées et commentées.</p>
+<pre><span class="c">a3f2e1  Ajoute le total des activités au bilan
+9b7c44  Corrige le calcul du budget restant
+5d1a08  Création du carnet de voyage v1</span></pre>
+<p>Chaque commit permet de : savoir <b>qui</b> a changé <b>quoi</b>, <b>quand</b> et <b>pourquoi</b> — et de <b>revenir en arrière</b> si une livraison casse tout.</p>
+<div class="tip">💡 Le message de commit doit dire le POURQUOI. « Corrige le calcul du budget » aide ; « modifs » n'aide personne. Tu liras ces messages comme un journal de bord du projet.</div>`},
+    {t:"Branches et pull requests 🌿",
+     html:`<p>Pour travailler sans casser ce qui marche, on ouvre une <b>branche</b> : une copie de chantier, isolée de la version stable (la branche <code>main</code>).</p>
+<pre><span class="c">main     ●──●──●──────────●  ← toujours stable
+                \\        /
+ajout-meteo      ●──●──●     ← le chantier</span></pre>
+<p>Chantier terminé ? On ouvre une <b>pull request</b> (PR) : « voici mes changements, relis-les et approuve la fusion ». La PR montre le <b>diff</b> — exactement ce qui change, ligne par ligne.</p>
+<div class="tip">🏗️ <b>Dans notre duo :</b> la PR est TON moment de PO : je code sur une branche, j'ouvre la PR, tu lis le diff avec tout ce que PyQuest t'a appris, tu poses tes questions... et rien ne rejoint l'app tant que tu n'as pas dit oui.</div>`},
+    {t:"Ton GitHub, version comprise 🐙",
+     html:`<p>Remets tout en place : <b>Git</b> est l'outil d'historique ; <b>GitHub</b> est le site qui héberge ton <b>dépôt</b> (le projet + toute son histoire) et y ajoute les PR, les tickets... et <b>Pages</b>, qui sert ton app au monde.</p>
+<pre><span class="c">1. je code sur une branche      (l'IA 🤖)
+2. j'ouvre une pull request     (l'IA 🤖)
+3. tu lis le diff, tu valides   (le PO 🧑‍💼)
+4. fusion dans main             (ensemble)
+5. déploiement automatique      (GitHub 🚀)</span></pre>
+<div class="tip">💡 Ce que tu faisais « sans comprendre » depuis la v1 de PyQuest — déposer les fichiers, activer Pages — c'était les étapes 4 et 5 de ce cycle. Boucle bouclée !</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Qu'est-ce qu'un commit ?",
+     opts:["Une photo datée du projet, avec un message expliquant le changement","Un bug","Un serveur","Un type de variable Python"], a:0,
+     exp:"L'unité de base de l'historique. Une suite de commits = la biographie complète du projet."},
+    {type:"qcm", q:"À quoi sert une branche ?",
+     opts:["À travailler sur un chantier isolé sans toucher la version stable","À supprimer le projet","À accélérer internet","À décorer le dépôt"], a:0,
+     exp:"On expérimente sur la branche, main reste stable. Fusion uniquement après validation — la tienne !"},
+    {type:"qcm", q:"Une pull request (PR), c'est...",
+     opts:["Une demande de relecture-fusion : « voici mes changements, approuve-les »","Une facture","Un message d'erreur","Une sauvegarde automatique"], a:0,
+     exp:"Le rituel de livraison. Le diff te montre chaque ligne changée : c'est là que ta lecture de code devient un super-pouvoir."},
+    {type:"qcm", q:"🎯 <b>Scénario PO</b> — L'app marchait lundi, elle est cassée jeudi. Ton premier réflexe outillé ?",
+     opts:["Regarder les commits entre lundi et jeudi pour identifier le changement suspect","Tout supprimer et recommencer","Racheter un téléphone","Attendre que ça passe"], a:0,
+     exp:"L'historique EST le journal d'enquête. Trouver le commit fautif permet même de revenir en arrière proprement le temps du correctif."},
+    {type:"qcm", q:"Quel message de commit est le plus utile ?",
+     opts:["« Corrige le total : les étapes gratuites étaient ignorées »","« modifs »","« wip 2 »","« ça marche »"], a:0,
+     exp:"Le pourquoi + le quoi. Six mois plus tard (ou six minutes, avec une IA qui livre vite), ce message vaut de l'or."},
+    {type:"vf", q:"Tant que la pull request n'est pas approuvée et fusionnée, l'app en production n'est pas modifiée.", a:true,
+     exp:"C'est toute la protection du système : rien n'atteint main — ni les utilisateurs — sans passer par ta revue."}
+  ]
+},
+{
+  id:"ch19", icon:"✅", title:"Les tests", sub:"la qualité prouvée, pas promise",
+  obj:["lire un test : un contrat exécutable qui vérifie une règle",
+       "savoir QUOI exiger : cas normaux, cas limites, cas d'erreur",
+       "comprendre la régression et l'intérêt des tests automatiques (CI)"],
+  resume:["un test = du code qui vérifie le code : assert calculer_reste(500, 55) == 445",
+       "si quelqu'un casse la règle plus tard, le test échoue immédiatement : fini les régressions silencieuses",
+       "exige les trois familles : cas normal, cas limite (0, vide, négatif), cas d'erreur",
+       "critère d'acceptation ↔ test : chaque critère de ta spec mérite son test",
+       "la CI (GitHub Actions) relance TOUS les tests à chaque livraison, automatiquement"],
+  fiches:[
+    {t:"Un contrat exécutable 🤝",
+     html:`<p>Comment être sûr que <code>calculer_reste</code> fait le bon calcul — aujourd'hui ET après dix modifications ? Réponse : un <b>test</b>, du code qui vérifie le code.</p>
+<pre><span class="k">def</span> <span class="f">test_calculer_reste</span>():
+    <span class="k">assert</span> calculer_reste(<span class="n">500</span>, <span class="n">55</span>) == <span class="n">445</span>
+
+<span class="k">def</span> <span class="f">test_budget_depasse</span>():
+    <span class="k">assert</span> calculer_reste(<span class="n">100</span>, <span class="n">150</span>) == -<span class="n">50</span></pre>
+<p><code>assert</code> = « vérifie que c'est vrai, sinon hurle ». Si un futur changement casse le calcul, le test échoue <b>immédiatement</b> et on le sait avant les utilisateurs.</p>
+<div class="tip">💡 Un test, c'est un contrat du Chapitre 3... mais exécutable. La docstring PROMET, le test PROUVE.</div>`},
+    {t:"Quoi exiger : les trois familles 🧐",
+     html:`<p>Ton rôle de PO n'est pas d'écrire les tests — c'est d'<b>exiger les bons</b>. La grille magique, trois familles :</p>
+<p>1️⃣ <b>Cas normal</b> : reste = 500 − 55 → 445 ✓<br>
+2️⃣ <b>Cas limites</b> : budget de 0 ? aucune étape ? coût négatif ?<br>
+3️⃣ <b>Cas d'erreur</b> : coût saisi en texte → message propre, pas de crash (ton try/except !)</p>
+<p>Et le lien en or : <b>chaque critère d'acceptation de ta spec mérite son test</b>. « Le total se met à jour » → <code>test_total_mis_a_jour()</code>. Ta spec devient vérifiable mot pour mot.</p>
+<div class="tip">🏗️ <b>Dans notre duo :</b> ta phrase magique en revue : « montre-moi le test qui prouve le critère 3 ». Si le test n'existe pas, la livraison n'est pas finie.</div>`},
+    {t:"La régression et la CI 🤖",
+     html:`<p>Le pire bug : celui qui casse une fonction qui <b>marchait</b> — une <b>régression</b>. Parade : relancer TOUS les tests à chaque changement.</p>
+<p>À la main ? Non : la <b>CI</b> (intégration continue, ex. GitHub Actions) le fait automatiquement à chaque commit poussé. Résultat visible sur la PR : ✅ tous les tests passent, ou ❌ quelque chose est cassé.</p>
+<pre><span class="c">PR #12 — Ajout de la météo par étape
+  ✅ 34/34 tests passent
+  → prête pour ta revue</span></pre>
+<div class="tip">💡 Le ✅ sur une PR ne dit pas « l'app est parfaite » — il dit « rien de ce qui était protégé n'a été cassé ». Plus il y a de tests, plus ce ✅ a de valeur. D'où ton exigence de la fiche précédente !</div>`}
+  ],
+  quiz:[
+    {type:"output", q:"🔍 <b>Lecture de test</b> — Que vérifie ce test ?",
+     code:'def test_total_activites():\n    etapes = [{"cout": 20}, {"cout": 15}]\n    assert total_activites(etapes) == 35',
+     opts:["Que la somme des coûts de 2 étapes fait bien 35","Que les étapes sont jolies","Que l'API répond 200","Que la base contient 35 lignes"], a:0,
+     exp:"Données d'entrée connues → résultat attendu vérifié par assert. Si un futur refactoring casse la somme, ce test hurle."},
+    {type:"qcm", q:"Que se passe-t-il quand un <code>assert</code> est faux ?",
+     opts:["Le test échoue et le signale immédiatement","Rien du tout","L'app s'améliore toute seule","Le serveur redémarre"], a:0,
+     exp:"C'est le but : échouer fort et tôt, plutôt que laisser un bug silencieux atteindre les utilisateurs."},
+    {type:"qcm", q:"🎯 <b>Revue PO</b> — Critère : « si le coût saisi n'est pas un nombre, message d'erreur propre ». Quel test exiges-tu ?",
+     opts:["Un test qui passe un texte en coût et vérifie le message (sans plantage)","Un test qui vérifie que 2+2=4","Un test de la couleur du bouton","Aucun, on verra en production"], a:0,
+     exp:"Le test rejoue exactement le critère — famille « cas d'erreur ». Ta spec et la suite de tests deviennent le miroir l'une de l'autre."},
+    {type:"qcm", q:"Une « régression », c'est...",
+     opts:["Un changement qui casse quelque chose qui fonctionnait","Une nouvelle fonctionnalité","Un type de base de données","Une baisse du prix du serveur"], a:0,
+     exp:"L'ennemi n°1 des projets qui bougent vite (donc des projets avec IA !). Les tests + la CI sont le filet de sécurité."},
+    {type:"qcm", q:"Sur une PR, le badge « ✅ 34/34 tests passent » signifie...",
+     opts:["Rien de ce qui était protégé par un test n'a été cassé","L'app est parfaite et sans aucun bug","Le design est validé","Les utilisateurs sont contents"], a:0,
+     exp:"Le ✅ vaut ce que valent les tests. C'est pourquoi le PO exige des tests pour chaque critère : plus de protection = un ✅ qui veut vraiment dire quelque chose."},
+    {type:"vf", q:"La CI (ex. GitHub Actions) relance automatiquement les tests à chaque livraison de code.", a:true,
+     exp:"À chaque commit poussé, toute la suite tourne. Personne n'a besoin d'y penser — et surtout pas toi à 23 h la veille des vacances."}
+  ]
+},
+{
+  id:"ch20", icon:"🚀", title:"Environnements et déploiement", sub:"de ton atelier aux vrais utilisateurs",
+  obj:["distinguer les environnements : développement et production",
+       "savoir où vivent les secrets (jamais dans le code !) et à quoi sert requirements.txt",
+       "comprendre enfin Docker, et les options d'hébergement d'une app"],
+  resume:["dev = l'atelier (données de test) ; prod = les vrais utilisateurs (données réelles) — on ne bricole JAMAIS en prod",
+       "les secrets (clés d'API, mots de passe) vont dans des variables d'environnement, jamais dans le code ni sur GitHub",
+       "requirements.txt liste les dépendances : la recette pour reconstruire l'app n'importe où",
+       "Docker emballe l'app + tout son nécessaire dans un conteneur identique partout — fini le « ça marche chez moi »",
+       "héberger : GitHub Pages pour le frontend statique ; un service cloud (Render, Railway...) pour le backend + la base"],
+  fiches:[
+    {t:"Dev, prod : deux mondes 🌍",
+     html:`<p>Une app vit dans plusieurs <b>environnements</b> :</p>
+<p>🔧 <b>Développement (dev)</b> : ton atelier. Données de test, on casse, on essaie, aucun risque.<br><br>
+🌟 <b>Production (prod)</b> : le monde réel. Les vrais utilisateurs, les vraies données.</p>
+<p>La règle absolue : <b>on ne modifie jamais directement la prod</b>. Tout changement passe par dev → tests → PR → déploiement.</p>
+<div class="tip">🏗️ <b>Dans une vraie app :</b> « ça marche en dev mais pas en prod » est un classique. La cause est presque toujours une DIFFÉRENCE d'environnement : configuration, secrets, version d'une dépendance... la suite de cette leçon, justement.</div>`},
+    {t:"Secrets et configuration 🔐",
+     html:`<p>Ton app voyage utilisera une clé d'API météo, un mot de passe de base de données... Ces <b>secrets</b> ne doivent <b>JAMAIS</b> être écrits dans le code :</p>
+<pre><span class="c"># ❌ CATASTROPHE (le code part sur GitHub, public !)</span>
+cle_meteo = <span class="s">"sk-abc123-secret"</span>
+
+<span class="c"># ✅ le code LIT le secret depuis l'environnement</span>
+<span class="k">import</span> os
+cle_meteo = os.environ[<span class="s">"CLE_METEO"</span>]</pre>
+<p>Chaque environnement fournit SES valeurs (une clé de test en dev, la vraie en prod). Et les dépendances de l'app sont listées dans <code>requirements.txt</code> — la recette exacte pour la reconstruire ailleurs.</p>
+<div class="tip">💡 En revue de PR, un secret en clair dans le code = ton veto immédiat. C'est l'une des fautes les plus graves — et les plus faciles à repérer maintenant.</div>`},
+    {t:"Docker et l'hébergement 📦",
+     html:`<p>Le voilà enfin ! <b>Docker</b> emballe ton app avec TOUT ce qu'il lui faut (Python, dépendances, configuration) dans un <b>conteneur</b> : une boîte standard qui tourne à l'identique sur n'importe quelle machine.</p>
+<pre><span class="c">🖥️ ton atelier          ☁️ le serveur de prod
+[📦 conteneur]    =     [📦 le MÊME conteneur]</span></pre>
+<p>Fini le « ça marche chez moi » : la boîte embarque son monde. Pour héberger ton app voyage : le <b>frontend</b> statique reste sur GitHub Pages (tu maîtrises !), le <b>backend + la base</b> partent sur un service cloud (Render, Railway, Fly.io...) qui exécute le conteneur.</p>
+<div class="tip">🏗️ <b>Dans notre duo :</b> je préparerai le Dockerfile et le déploiement ; toi tu sauras ce que c'est, pourquoi c'est là, et quoi vérifier : « le même conteneur en dev et en prod ? les secrets hors du code ? » Deux questions, 90 % des ennuis évités.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Quelle est la différence entre dev et prod ?",
+     opts:["Dev = atelier avec données de test ; prod = les vrais utilisateurs et les vraies données","Dev est payant, prod est gratuit","Dev est en anglais, prod en français","Aucune"], a:0,
+     exp:"Deux mondes étanches. On expérimente en dev, la prod ne reçoit que du code testé et validé."},
+    {type:"qcm", q:"🐛 <b>Revue de PR</b> — Tu lis <code>mot_de_passe_db = \"Azerty123!\"</code> dans le code. Ta réaction ?",
+     opts:["Veto : un secret ne va jamais dans le code — variable d'environnement obligatoire","Approuver, c'est pratique","Demander un mot de passe plus long","Le recopier dans un carnet"], a:0,
+     exp:"Le code finit sur GitHub : un secret en clair y est exposé pour toujours (l'historique Git n'oublie rien !). os.environ, toujours."},
+    {type:"qcm", q:"À quoi sert <code>requirements.txt</code> ?",
+     opts:["À lister les dépendances exactes pour reconstruire l'app n'importe où","À stocker les mots de passe","À écrire la documentation","À ralentir l'installation"], a:0,
+     exp:"C'est la liste de courses de l'app : pip la lit et installe tout. Indispensable pour que dev, prod et le conteneur Docker aient le même monde."},
+    {type:"qcm", q:"Docker, en une phrase ?",
+     opts:["Une boîte standard qui emballe l'app et tout son nécessaire, identique sur toute machine","Un langage de programmation","Une base de données","Un antivirus"], a:0,
+     exp:"Le conteneur résout « ça marche chez moi » : même boîte partout, même comportement partout. Tu sauras désormais pourquoi il est dans le projet !"},
+    {type:"qcm", q:"🎯 <b>Diagnostic PO</b> — « Ça marche en dev, pas en prod. » Le suspect le plus probable ?",
+     opts:["Une différence d'environnement : configuration, secret manquant, dépendance","Les utilisateurs cliquent mal","Le langage Python","La couleur du logo"], a:0,
+     exp:"Même code + comportements différents = environnements différents. Première question : « qu'est-ce qui n'est pas pareil en prod ? » (et Docker réduit justement cette question à presque rien)."},
+    {type:"vf", q:"Pour ton app voyage : le frontend peut rester sur GitHub Pages, mais le backend et la base devront être hébergés sur un service cloud.", a:true,
+     exp:"Pages sert des fichiers statiques (ton frontend). Le backend, lui, doit TOURNER en continu : Render, Railway, Fly... C'est le plan d'hébergement de ton vrai projet."}
+  ]
+},
+{
+  id:"tp5", icon:"🧪", title:"TP final — Une itération complète", sub:"la répétition générale du vrai projet", tp:true,
+  obj:["dérouler le cycle entier : spec → livraison → revue → verdict",
+       "croiser une livraison avec ses critères d'acceptation, tests à l'appui",
+       "détecter le critère non couvert — comme un vrai PO en revue de PR"],
+  resume:["le cycle : user story + critères → l'IA livre (code + tests) → TU passes en revue → verdict argumenté",
+       "ta grille de revue : chaque critère a-t-il son code ET son test ?",
+       "un critère sans test = une livraison incomplète, même si « ça a l'air de marcher »",
+       "tu viens de jouer ton futur rôle de bout en bout. Direction : la vraie app voyage ! 🚀"],
+  fiches:[
+    {t:"🧪 Ta mission : l'itération 🎬",
+     html:`<p>Dernière mission — et cette fois tu joues TOUT ton rôle. Voici la spec que tu m'as envoyée :</p>
+<p>📖 <b>User story</b> : « En tant que voyageur, je veux <b>marquer une étape comme faite</b> afin de suivre l'avancement de mon voyage. »</p>
+<p>✅ <b>Critères d'acceptation :</b><br>
+1️⃣ chaque étape a un statut fait / à faire — <b>à faire par défaut</b><br>
+2️⃣ l'endpoint <code>POST /api/etapes/&lt;id&gt;/fait</code> bascule le statut<br>
+3️⃣ le total des coûts des étapes FAITES est calculable<br>
+4️⃣ chaque critère est couvert par un test</p>
+<p>J'ai livré une pull request : ✅ les tests passent. Ta revue commence à la fiche suivante.</p>
+<div class="tip">💡 Ta grille de lecture : pour CHAQUE critère, cherche le code qui l'implémente ET le test qui le prouve. S'il manque l'un des deux quelque part... c'est là que ta revue frappera.</div>`},
+    {t:"📦 La livraison (extraits de la PR)",
+     html:`<pre><span class="c">-- migration de la base :</span>
+<span class="k">ALTER TABLE</span> etapes <span class="k">ADD COLUMN</span> fait BOOLEAN;
+
+<span class="c"># backend/app.py :</span>
+@app.post(<span class="s">"/api/etapes/&lt;id&gt;/fait"</span>)
+<span class="k">def</span> <span class="f">marquer_fait</span>(id):
+    <span class="s">"""Bascule le statut fait de l'étape."""</span>
+    db.execute(<span class="s">"UPDATE etapes SET fait = NOT fait WHERE id = ?"</span>, id)
+    <span class="k">return</span> {<span class="s">"ok"</span>: <span class="k">True</span>}
+
+<span class="c"># backend/calculs.py :</span>
+<span class="k">def</span> <span class="f">total_fait</span>(etapes):
+    <span class="s">"""Retourne le total des coûts des étapes faites."""</span>
+    total = <span class="n">0</span>
+    <span class="k">for</span> e <span class="k">in</span> etapes:
+        <span class="k">if</span> e[<span class="s">"fait"</span>]:
+            total = total + e[<span class="s">"cout"</span>]
+    <span class="k">return</span> total
+
+<span class="c"># tests/test_calculs.py :</span>
+<span class="k">def</span> <span class="f">test_total_fait</span>():
+    etapes = [{<span class="s">"cout"</span>: <span class="n">25</span>, <span class="s">"fait"</span>: <span class="k">True</span>},
+              {<span class="s">"cout"</span>: <span class="n">30</span>, <span class="s">"fait"</span>: <span class="k">False</span>},
+              {<span class="s">"cout"</span>: <span class="n">10</span>, <span class="s">"fait"</span>: <span class="k">True</span>}]
+    <span class="k">assert</span> total_fait(etapes) == <span class="n">35</span></pre>
+<div class="tip">🎯 Reprends les 4 critères un à un face à ces extraits. Un détail cloche dans la migration SQL... ton œil de PO va le trouver.</div>`}
+  ],
+  quiz:[
+    {type:"qcm", q:"Critère 3 (total des étapes faites) : quel élément de la livraison l'implémente ?",
+     opts:["La fonction total_fait dans calculs.py","La migration ALTER TABLE","L'endpoint POST","Le fichier requirements.txt"], a:0,
+     exp:"total_fait parcourt les étapes et n'additionne que celles où fait est vrai. Le if e[\"fait\"] — tu lis ça couramment maintenant."},
+    {type:"output", q:"🔍 Que prouve exactement <code>test_total_fait</code> ?",
+     opts:["Avec 2 étapes faites (25 et 10) et 1 non faite, le total vaut 35","Que l'endpoint répond 200","Que la colonne fait existe en base","Que le frontend affiche le total"], a:0,
+     exp:"25 + 10 = 35, la non-faite est ignorée. Le critère 3 a son code ET son test : validé."},
+    {type:"qcm", q:"🐛 <b>Ta trouvaille de revue</b> — Critère 1 : « à faire par défaut ». Regarde la migration SQL. Le problème ?",
+     opts:["ADD COLUMN fait BOOLEAN n'a pas de DEFAULT : le statut par défaut n'est pas garanti","Le SQL est en anglais","BOOLEAN n'existe pas","Il fallait supprimer la table"], a:0,
+     exp:"Bien vu ! Sans DEFAULT 0 (faux), les étapes existantes ont un statut indéfini (NULL). Le critère 1 n'est PAS pleinement couvert — et aucun test ne le vérifie. C'est LA faille de cette livraison."},
+    {type:"qcm", q:"Conséquence : quel verdict de revue rends-tu sur cette PR ?",
+     opts:["Changements demandés : ajouter DEFAULT au SQL + un test du statut par défaut","Approuvée telle quelle, les tests passent","Rejet total, tout est à refaire","Aucun avis"], a:0,
+     exp:"Verdict proportionné et argumenté : le reste est bon, UN critère est troué. « Les tests passent » ne suffisait pas — c'est toute la leçon des tests : le ✅ ne couvre que ce qui est testé."},
+    {type:"qcm", q:"En testant l'endpoint toi-même, tu reçois un 500. Ton rapport de bug parfait ?",
+     opts:["« POST /api/etapes/2/fait → 500. Log : sqlite3.OperationalError line 42. Étape 2 existante, statut initial NULL »","« ça marche pas »","« le serveur est nul »","« erreur quelque part, cherche bien »"], a:0,
+     exp:"Requête exacte + code + log + contexte : le grand chelem du rapport de bug. (Et remarque : le NULL du critère 1 refait surface — tout se tient !)"},
+    {type:"vf", q:"Tu viens de dérouler le cycle complet — spec, livraison, revue, verdict argumenté — celui de ton futur rôle sur l'app voyage.", a:true,
+     exp:"Spec précise ✓ lecture de code ✓ critères vs tests ✓ faille détectée ✓ verdict pro ✓. Le curriculum est bouclé : à nous la vraie app ! 🏛️🚀"}
+  ]
 }
 ]}
 ];
 const LESSONS = UNITS.flatMap(u => u.lessons);
 
+/* Courbe volontairement large : les derniers niveaux attendent les chapitres à venir ! */
 const LEVELS = [
-  {xp:0,   emoji:"🥚", name:"Œuf de Python",        sub:"Ton aventure commence ici !"},
-  {xp:70,  emoji:"🐛", name:"Bébé serpent",          sub:"Ça y est, tu rampes dans le code !"},
-  {xp:150, emoji:"🐍", name:"Python curieux",        sub:"Les bases sont là, on structure !"},
-  {xp:250, emoji:"🧙", name:"Charmeur de serpents",  sub:"Les données n'ont plus de secret."},
-  {xp:370, emoji:"🏆", name:"Maître Pythonista",     sub:"Tu lis du vrai code d'app !"},
-  {xp:500, emoji:"🐉", name:"Légende du Python",     sub:"Sans-faute ou presque. Respect."}
+  {xp:0,    emoji:"🥚", name:"Œuf de Python",        sub:"Ton aventure commence ici !",
+   desc:"Tout le monde commence quelque part — l'œuf vient d'éclore."},
+  {xp:75,   emoji:"🐛", name:"Bébé serpent",          sub:"Ça y est, tu rampes dans le code !",
+   desc:"Tes premières lignes lues : print, textes, variables."},
+  {xp:200,  emoji:"🐍", name:"Python curieux",        sub:"Les bases s'installent, continue !",
+   desc:"Types, conditions, boucles : les fondations tiennent debout."},
+  {xp:380,  emoji:"🧙", name:"Charmeur de serpents",  sub:"Le code commence à te parler.",
+   desc:"Tu décodes les messages d'erreur et tu lis de vrais bouts de programme."},
+  {xp:600,  emoji:"🏆", name:"Maître Pythonista",     sub:"Les données n'ont plus de secret.",
+   desc:"Listes, dictionnaires, JSON : tu comprends comment les apps rangent leurs données."},
+  {xp:900,  emoji:"🏗️", name:"Bâtisseur d'apps",     sub:"Tu lis des programmes entiers !",
+   desc:"Fonctions, contrats, modules : tu navigues dans un projet organisé et tu valides des livraisons."},
+  {xp:1300, emoji:"🏛️", name:"Architecte Python",    sub:"Tu parles couramment développeur.",
+   desc:"API, bases de données, frontend/backend, Git, Docker : tu conçois l'architecture d'une vraie app."},
+  {xp:1800, emoji:"🐉", name:"Légende du Python",     sub:"Le sommet. Respect éternel.",
+   desc:"Tu pilotes des projets Python avec l'IA en toute confiance, de l'idée au déploiement."}
 ];
 const XP_PER_GOOD = 10, XP_PERFECT_BONUS = 15;
 /* ==================== ÉTAT & SAUVEGARDE ==================== */
@@ -607,6 +1883,7 @@ function totalXP(){
 function passScore(ch){ return Math.ceil(NQ(ch) * 0.6); }   // ex. 4/6 pour réussir
 function isUnlocked(i){
   if(i === 0) return true;
+  if(state.best[LESSONS[i].id] !== undefined) return true;  // déjà jouée (tolère les leçons insérées par les mises à jour)
   const prev = LESSONS[i-1];
   return (state.best[prev.id] || 0) >= passScore(prev);
 }
@@ -655,7 +1932,7 @@ function importCode(code){
 /* Navigation à niveaux : accueil (0) → chapitre (1) → leçon/quiz (2).
    Chaque descente empile une entrée d'historique : le geste retour
    d'Android remonte donc d'un niveau au lieu de quitter l'app. */
-const SDEPTH = {home:0, unit:1, save:1, lesson:2, quiz:2, result:2};
+const SDEPTH = {home:0, unit:1, save:1, levels:1, lesson:2, quiz:2, result:2};
 let stack = ["home"], pendingTarget = null;
 
 function render(name){
@@ -665,6 +1942,7 @@ function render(name){
   if(name === "home") renderHome();
   if(name === "unit") renderUnit();
   if(name === "save") renderSave();
+  if(name === "levels") renderLevels();
 }
 function show(name){
   const cur = stack[stack.length-1];
@@ -765,20 +2043,75 @@ function renderUnit(){
   const list = document.getElementById("lesson-list");
   list.innerHTML = "";
   const first = unitFirstFlat(curUnit);
+  let num = 0;
   unit.lessons.forEach((ch, k) => {
     const i = first + k;
     const unlocked = isUnlocked(i);
     const best = state.best[ch.id];
+    const label = ch.tp ? "🧪 TP de synthèse" : "Leçon " + (++num) + " · " + ch.title;
     const div = document.createElement("div");
     div.className = "chap" + (unlocked ? "" : " locked");
     div.innerHTML = `<div class="icon">${unlocked ? ch.icon : "🔒"}</div>
       <div class="meta">
-        <div class="title">Leçon ${k+1} · ${ch.title}</div>
-        <div class="sub">${unlocked ? ch.sub : `Réussis la leçon précédente (${passScore(LESSONS[i-1])}/${NQ(LESSONS[i-1])} minimum) pour débloquer`}</div>
+        <div class="title">${label}</div>
+        <div class="sub">${unlocked ? (ch.tp ? ch.title + " — " + ch.sub : ch.sub) : `Réussis la leçon précédente (${passScore(LESSONS[i-1])}/${NQ(LESSONS[i-1])} minimum) pour débloquer`}</div>
         <div class="stars" style="color:var(--accent)">${unlocked ? stars(best, NQ(ch)) + (best !== undefined ? "  " + best + "/" + NQ(ch) : "  nouveau !") : ""}</div>
-      </div><div class="go">${unlocked ? "›" : ""}</div>`;
+      </div><button class="info-btn" title="À propos de cette leçon">i</button><div class="go">${unlocked ? "›" : ""}</div>`;
+    div.querySelector(".info-btn").addEventListener("click", e => { e.stopPropagation(); openInfo(i); });
     if(unlocked) div.addEventListener("click", () => startLesson(i));
     list.appendChild(div);
+  });
+}
+
+/* ==================== POP-UP INFO LEÇON ==================== */
+function openInfo(i){
+  const ch = LESSONS[i];
+  const unlocked = isUnlocked(i);
+  const body = document.getElementById("modal-body");
+  body.innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;">
+      <div class="icon" style="font-size:28px; width:46px; height:46px; display:flex; align-items:center; justify-content:center; background:var(--card2); border-radius:12px;">${ch.icon}</div>
+      <div><h3 style="margin:0;">${ch.tp ? "🧪 " : ""}${ch.title}</h3>
+      <div style="color:var(--muted); font-size:13px;">${ch.sub}</div></div>
+    </div>
+    <div class="obj"><b>🎯 Ce que tu vas apprendre :</b><ul>${ch.obj.map(o => "<li>" + o + "</li>").join("")}</ul></div>
+    <div style="color:var(--muted); font-size:13px; margin-top:10px;">
+      ${ch.fiches.length} fiches + résumé · quiz de ${NQ(ch)} questions · ${passScore(ch)}/${NQ(ch)} pour réussir · ${NQ(ch)*XP_PER_GOOD + XP_PERFECT_BONUS} XP max
+    </div>
+    ${unlocked ? `<button class="btn btn-primary" id="modal-start">C'est parti ! →</button>`
+               : `<div class="msg" style="margin-top:12px;">🔒 Termine d'abord la leçon précédente pour la débloquer.</div>`}`;
+  document.getElementById("modal-bg").classList.add("open");
+  const st = document.getElementById("modal-start");
+  if(st) st.addEventListener("click", () => { closeInfo(); startLesson(i); });
+}
+function closeInfo(){ document.getElementById("modal-bg").classList.remove("open"); }
+document.getElementById("modal-bg").addEventListener("click", e => { if(e.target.id === "modal-bg") closeInfo(); });
+document.getElementById("modal-close").addEventListener("click", closeInfo);
+
+/* ==================== FRISE DES NIVEAUX ==================== */
+const MAX_CONTENT_XP = LESSONS.reduce((s, l) => s + NQ(l) * XP_PER_GOOD + XP_PERFECT_BONUS, 0);
+document.getElementById("hero-home").addEventListener("click", () => show("levels"));
+function renderLevels(){
+  const xp = totalXP();
+  const {cur} = levelFor(xp);
+  document.getElementById("levels-xp").textContent =
+    "⭐ " + xp + " XP — " + MAX_CONTENT_XP + " XP disponibles dans les chapitres actuels";
+  const list = document.getElementById("levels-list");
+  list.innerHTML = "";
+  LEVELS.forEach((l, k) => {
+    const reached = xp >= l.xp;
+    const isCur = l === cur;
+    const soon = l.xp > MAX_CONTENT_XP;
+    const row = document.createElement("div");
+    row.className = "lvl-row" + (reached && !isCur ? " done" : "") + (isCur ? " cur done" : "") + (!reached ? " future" : "");
+    row.innerHTML = `<div class="line"></div>
+      <div class="lvl-node">${l.emoji}</div>
+      <div class="lvl-meta">
+        <div class="name">${l.name}${isCur ? '<span class="you">◀ tu es ici</span>' : ""}${soon ? '<span class="badge-soon">🔒 avec les prochains chapitres</span>' : ""}</div>
+        <div class="xp">${l.xp} XP${k < LEVELS.length-1 ? " → " + LEVELS[k+1].xp + " XP" : " et au-delà"}${reached ? " · atteint ✓" : !isCur && xp < l.xp ? " · encore " + (l.xp - xp) + " XP" : ""}</div>
+        <div class="desc">${l.desc}</div>
+      </div>`;
+    list.appendChild(row);
   });
 }
 
@@ -788,19 +2121,29 @@ function startLesson(i){
   curChap = i; curFiche = 0; curUnit = unitOf(i);
   renderFiche(); show("lesson");
 }
+function totalFiches(ch){ return ch.fiches.length + (ch.resume ? 1 : 0); }
 function renderFiche(){
-  const ch = LESSONS[curChap], f = ch.fiches[curFiche];
+  const ch = LESSONS[curChap];
+  const nT = totalFiches(ch);
   document.getElementById("lesson-chap-title").textContent = ch.icon + " " + ch.title;
-  document.getElementById("lesson-count").textContent = "Fiche " + (curFiche+1) + "/" + ch.fiches.length;
-  document.getElementById("fiche-box").innerHTML = "<h2>" + f.t + "</h2>" + f.html;
+  document.getElementById("lesson-count").textContent = "Fiche " + (curFiche+1) + "/" + nT;
+  const box = document.getElementById("fiche-box");
+  if(curFiche < ch.fiches.length){
+    const f = ch.fiches[curFiche];
+    box.innerHTML = "<h2>" + f.t + "</h2>" + f.html;
+  }else{
+    box.innerHTML = "<h2>📌 En résumé</h2><ul class='resume'>" +
+      ch.resume.map(r => "<li>" + r + "</li>").join("") +
+      "</ul><p style='color:var(--muted); font-size:14px;'>Ces points te suffisent pour le quiz. Tu peux revenir en arrière d'un swipe si besoin !</p>";
+  }
   const dots = document.getElementById("lesson-dots");
-  dots.innerHTML = ch.fiches.map((_,k) => `<i class="${k<=curFiche?'on':''}"></i>`).join("");
+  dots.innerHTML = Array.from({length:nT}, (_,k) => `<i class="${k<=curFiche?'on':''}"></i>`).join("");
   document.getElementById("btn-lesson-next").textContent =
-    curFiche < ch.fiches.length-1 ? "Fiche suivante →" : "C'est parti pour le quiz ! 🎯";
+    curFiche < nT-1 ? "Fiche suivante →" : "C'est parti pour le quiz ! 🎯";
 }
 document.getElementById("btn-lesson-next").addEventListener("click", () => {
   const ch = LESSONS[curChap];
-  if(curFiche < ch.fiches.length-1){ curFiche++; renderFiche(); window.scrollTo(0,0); }
+  if(curFiche < totalFiches(ch)-1){ curFiche++; renderFiche(); window.scrollTo(0,0); }
   else startQuiz();
 });
 
@@ -809,6 +2152,8 @@ document.getElementById("btn-lesson-next").addEventListener("click", () => {
   const zone = document.getElementById("screen-lesson");
   let x0 = null, y0 = null;
   zone.addEventListener("touchstart", e => {
+    /* Un doigt posé sur un bloc de code = scroll horizontal du code, pas un swipe de fiche */
+    if(e.target && e.target.closest && e.target.closest("pre")){ x0 = null; return; }
     x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
   }, {passive:true});
   zone.addEventListener("touchend", e => {
@@ -818,7 +2163,7 @@ document.getElementById("btn-lesson-next").addEventListener("click", () => {
     x0 = null;
     if(Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;  // pas un vrai swipe horizontal
     const ch = LESSONS[curChap];
-    if(dx < 0 && curFiche < ch.fiches.length-1){ curFiche++; renderFiche(); }      // ← fiche suivante
+    if(dx < 0 && curFiche < totalFiches(ch)-1){ curFiche++; renderFiche(); }       // ← fiche suivante
     else if(dx > 0 && curFiche > 0){ curFiche--; renderFiche(); }                  // → fiche précédente
   }, {passive:true});
 })();

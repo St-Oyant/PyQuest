@@ -1,51 +1,48 @@
-# PyQuest 🐍 — v2.1
+# PyQuest 🐍 — v5 · LE CURRICULUM COMPLET
 
-Apprendre à **lire et comprendre** le Python en s'amusant, pour co-développer des apps avec Claude.
+Apprendre à **lire, comprendre et piloter** le développement Python par IA,
+pour devenir l'architecte/product owner de tes propres apps.
 
-## ⚠️ Important : déposer TOUS les fichiers
+## Déployer : TOUS les fichiers à la racine du dépôt
 
-Contrairement à la v1, la v2 est une **vraie app installable** (comme Cortex v2.0).
-Pour ça, Chrome exige plusieurs fichiers. Dépose **tout le contenu du zip à la racine
-du dépôt GitHub** :
+`index.html` · `manifest.json` · `sw.js` · `icon-192.png` · `icon-512.png`
 
-- `index.html` — l'app
-- `manifest.json` — la carte d'identité de l'app (nom, icône, plein écran)
-- `sw.js` — le « service worker », qui rend l'app installable et utilisable hors ligne
-- `icon-192.png` et `icon-512.png` — les icônes
+Sur le téléphone : Chrome → « Installer l'application ». Une version déjà installée
+se met à jour toute seule au prochain lancement en ligne (recharge une fois ou deux).
 
-## Installer sur le téléphone
+## Le parcours complet (5 chapitres · 25 leçons · 152 questions · 1895 XP)
 
-1. Dépose les 5 fichiers dans le dépôt GitHub (remplace les anciens)
-2. Settings → Pages → branche `main`, dossier `/` (root) si pas déjà fait
-3. Ouvre l'URL sur le téléphone dans Chrome
-4. Chrome devrait proposer **« Installer l'application »** (menu ⋮ ou bandeau) —
-   c'est bien « Installer », pas juste « Ajouter à l'écran d'accueil »
+**Chapitre 1 — Les bases** (6 leçons + TP « Carnet v0 »)
+Premiers pas · Variables · Types et conversions (+ None) · Conditions (+ and/or/not)
+· Boucles · Lire un message d'erreur (+ try/except)
 
-> Si tu avais l'ancienne version en raccourci : supprime-la de l'écran d'accueil,
-> recharge la page (une ou deux fois, le temps que le service worker s'active),
-> puis installe. Chrome peut mettre ~1 min à proposer l'installation.
+**Chapitre 2 — Les données** (3 leçons + TP « Carnet v1 »)
+Listes · Dictionnaires · JSON
 
-## Nouveautés v2 et v2.1
+**Chapitre 3 — Les fonctions** (3 leçons + TP « Carnet v2 » : le refactoring)
+Les fonctions · Assembler des fonctions (contrats, abstraction) · Modules et import
 
-- **Structure** : Chapitre 1 « Les bases » (4 leçons) + Chapitre 2 « Les données »
-  (listes, dictionnaires, JSON — les structures des vraies apps)
-- **Swipe** gauche/droite pour naviguer entre les fiches
-- **Geste retour** Android : sort de la leçon et revient à l'accueil (au lieu de quitter)
-- Réponses des quiz : affichage uniforme (fini les mélanges de polices)
-- Questions retravaillées : de nouveaux exemples qui obligent à appliquer le concept
-  (plus de réponse par mémoire visuelle des fiches 😉)
-- Niveaux rééquilibrés : 6 niveaux jusqu'à « Légende du Python 🐉 » (~sans-faute partout)
-- Fonctionne hors ligne une fois installée
-- **v2.1** : accueil par chapitres (fini la liste infinie !) avec notes agrégées par chapitre
-  (étoiles, leçons réussies, bonnes réponses) ; on entre dans un chapitre pour voir ses leçons ;
-  le geste retour remonte niveau par niveau (leçon → chapitre → accueil)
+**Chapitre 4 — L'architecture** *(nouveau)* (4 leçons + TP « Carnet v3 » : l'app 3 couches)
+Classes et objets · Client et serveur · Les API et HTTP · La base de données
 
-## Code de progression
+**Chapitre 5 — Piloter l'IA** *(nouveau)* (4 leçons + TP final : une itération complète)
+Du besoin à la spec · Git et les versions · Les tests · Environnements et déploiement
 
-Bouton 💾 → copier le code `PYQ2-...`. Les anciens codes `PYQ1-...` sont acceptés.
-À donner à Claude pour la v3, puis à recoller dans la nouvelle version.
+Le fil rouge « carnet de voyage » traverse tout : v0 (variables) → v1 (données)
+→ v2 (fonctions) → v3 (architecture) → l'itération finale où tu détectes toi-même
+le critère non couvert d'une livraison. 😉
 
-## Prochaines étapes du curriculum
+## Les 8 niveaux — tous atteignables désormais
 
-- **v3** : les fonctions comme briques d'un programme + lire un vrai petit programme complet
-- **v4** : comment une vraie app est organisée (fichiers, frontend/backend, API, base de données, Docker)
+🥚 0 → 🐛 75 → 🐍 200 → 🧙 380 → 🏆 600 → 🏗️ 900 → 🏛️ **Architecte Python 1300**
+→ 🐉 **Légende du Python 1800** (quasi-sans-faute sur tout le parcours exigé !)
+
+## Progression
+
+Sauvegarde automatique + bouton 💾 (code `PYQ2-...`).
+
+## Et après ?
+
+Le curriculum est bouclé. La suite logique n'est plus dans PyQuest :
+c'est **le vrai projet** — l'app voyage — développée ensemble en appliquant
+le Chapitre 5 : tes specs, mes livraisons, tes revues. 🚀
