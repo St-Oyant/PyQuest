@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2b4062"/>
+      <stop offset="1" stop-color="#121a2b"/>
+    </linearGradient>
+    <linearGradient id="yellow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffe27a"/>
+      <stop offset="1" stop-color="#f5b400"/>
+    </linearGradient>
+    <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5aa9e6"/>
+      <stop offset="1" stop-color="#356aa0"/>
+    </linearGradient>
+    <filter id="sh" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- fond arrondi -->
+  <rect width="512" height="512" rx="115" fill="url(#bg)"/>
+  <rect x="7" y="7" width="498" height="498" rx="109" fill="none" stroke="#ffffff" stroke-opacity="0.07" stroke-width="3"/>
+
+  <!-- petites étoiles (la "quête") -->
+  <path d="M116 92 l6 15 16 2 -12 11 3 16 -13 -8 -13 8 3 -16 -12 -11 16 -2 z" fill="#ffd43b"/>
+  <circle cx="402" cy="112" r="5" fill="#ffffff" opacity="0.55"/>
+  <circle cx="372" cy="86" r="3" fill="#ffffff" opacity="0.4"/>
+  <circle cx="118" cy="418" r="4.5" fill="#ffffff" opacity="0.45"/>
+  <circle cx="418" cy="404" r="3" fill="#ffffff" opacity="0.4"/>
+
+  <!-- serpent : S continu bicolore, épais et lisse -->
+  <g filter="url(#sh)" fill="none" stroke-linecap="round">
+    <!-- moitié basse jaune -->
+    <path d="M150 372
+             C 150 300, 250 320, 256 258"
+          stroke="url(#yellow)" stroke-width="52"/>
+    <!-- moitié haute bleue -->
+    <path d="M256 258
+             C 262 196, 360 214, 356 150"
+          stroke="url(#blue)" stroke-width="52"/>
+  </g>
+
+  <!-- tête -->
+  <g filter="url(#sh)">
+    <circle cx="356" cy="150" r="38" fill="url(#blue)"/>
+    <circle cx="367" cy="140" r="8.5" fill="#0d1b2a"/>
+    <circle cx="370" cy="137" r="2.5" fill="#ffffff"/>
+    <!-- langue -->
+    <path d="M388 168 q20 8 34 0" stroke="#ff5a5a" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <path d="M422 168 l11 -5 M422 168 l11 6" stroke="#ff5a5a" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- pointe de la queue -->
+  <circle cx="150" cy="372" r="26" fill="url(#yellow)"/>
+</svg>
