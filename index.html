@@ -75,7 +75,9 @@
   .btn:disabled{opacity:.4; cursor:not-allowed;}
 
   /* ===== Fiches ===== */
-  .fiche{background:var(--card); border:1px solid #33334d; border-radius:var(--radius); padding:20px;}
+  #screen-lesson{overflow-x:hidden;}
+  .fiche{background:var(--card); border:1px solid #33334d; border-radius:var(--radius); padding:20px;
+    will-change:transform, opacity;}
   .fiche h2{font-size:20px;}
   .fiche p{line-height:1.6; font-size:15px; color:#dcdcec;}
   .fiche .tip{background:#2a2a14; border-left:4px solid var(--accent); padding:10px 12px;
@@ -2119,6 +2121,7 @@ function renderLevels(){
 let curChap = 0, curFiche = 0;
 function startLesson(i){
   curChap = i; curFiche = 0; curUnit = unitOf(i);
+  resetFicheStyle();
   renderFiche(); show("lesson");
 }
 function totalFiches(ch){ return ch.fiches.length + (ch.resume ? 1 : 0); }
@@ -2141,30 +2144,87 @@ function renderFiche(){
   document.getElementById("btn-lesson-next").textContent =
     curFiche < nT-1 ? "Fiche suivante →" : "C'est parti pour le quiz ! 🎯";
 }
+/* --- Transition animée entre fiches --- */
+const FBOX = document.getElementById("fiche-box");
+let sliding = false;
+function resetFicheStyle(){
+  FBOX.style.transition = "none"; FBOX.style.transform = "none"; FBOX.style.opacity = "1";
+}
+function slideFiche(next, dir){   /* dir : 1 = vers la gauche (suivante), -1 = précédente */
+  if(sliding) return;
+  sliding = true;
+  FBOX.style.transition = "transform .2s ease-in, opacity .2s ease-in";
+  FBOX.style.transform = "translateX(" + (-dir * 85) + "%)";
+  FBOX.style.opacity = "0";
+  setTimeout(() => {
+    curFiche = next; renderFiche();
+    window.scrollTo(0, 0);
+    FBOX.style.transition = "none";
+    FBOX.style.transform = "translateX(" + (dir * 85) + "%)";
+    FBOX.style.opacity = "0";
+    void FBOX.offsetWidth;   /* force le navigateur à appliquer la position de départ */
+    FBOX.style.transition = "transform .22s ease-out, opacity .22s ease-out";
+    FBOX.style.transform = "translateX(0)";
+    FBOX.style.opacity = "1";
+    setTimeout(() => { sliding = false; }, 240);
+  }, 200);
+}
+function springBack(){
+  FBOX.style.transition = "transform .25s cubic-bezier(.2,.9,.3,1.2), opacity .2s ease";
+  FBOX.style.transform = "translateX(0)";
+  FBOX.style.opacity = "1";
+}
+
 document.getElementById("btn-lesson-next").addEventListener("click", () => {
   const ch = LESSONS[curChap];
-  if(curFiche < totalFiches(ch)-1){ curFiche++; renderFiche(); window.scrollTo(0,0); }
+  if(curFiche < totalFiches(ch)-1) slideFiche(curFiche + 1, 1);
   else startQuiz();
 });
 
-/* --- Swipe gauche/droite pour naviguer entre les fiches --- */
+/* --- La fiche suit le doigt (drag), puis glisse ou revient --- */
 (function(){
   const zone = document.getElementById("screen-lesson");
-  let x0 = null, y0 = null;
+  let x0 = null, y0 = null, dragging = false, locked = false, dx = 0;
   zone.addEventListener("touchstart", e => {
     /* Un doigt posé sur un bloc de code = scroll horizontal du code, pas un swipe de fiche */
     if(e.target && e.target.closest && e.target.closest("pre")){ x0 = null; return; }
+    if(sliding){ x0 = null; return; }
     x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    dragging = false; locked = false; dx = 0;
+  }, {passive:true});
+  zone.addEventListener("touchmove", e => {
+    if(x0 === null) return;
+    dx = e.touches[0].clientX - x0;
+    const dy = e.touches[0].clientY - y0;
+    if(!locked){
+      if(Math.abs(dx) < 12 && Math.abs(dy) < 12) return;   // trop tôt pour trancher
+      locked = true;
+      dragging = Math.abs(dx) > Math.abs(dy);              // intention horizontale ?
+    }
+    if(!dragging) return;
+    const ch = LESSONS[curChap];
+    const atEdge = (dx < 0 && curFiche >= totalFiches(ch)-1) || (dx > 0 && curFiche <= 0);
+    const eff = atEdge ? dx * 0.3 : dx;                    // résistance élastique en bout de série
+    FBOX.style.transition = "none";
+    FBOX.style.transform = "translateX(" + eff + "px)";
+    FBOX.style.opacity = String(Math.max(0.45, 1 - Math.abs(eff) / 600));
   }, {passive:true});
   zone.addEventListener("touchend", e => {
     if(x0 === null) return;
-    const dx = e.changedTouches[0].clientX - x0;
-    const dy = e.changedTouches[0].clientY - y0;
+    const endDx = e.changedTouches[0].clientX - x0;
+    const endDy = e.changedTouches[0].clientY - y0;
     x0 = null;
-    if(Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx)) return;  // pas un vrai swipe horizontal
     const ch = LESSONS[curChap];
-    if(dx < 0 && curFiche < totalFiches(ch)-1){ curFiche++; renderFiche(); }       // ← fiche suivante
-    else if(dx > 0 && curFiche > 0){ curFiche--; renderFiche(); }                  // → fiche précédente
+    if(dragging){
+      if(endDx < -70 && curFiche < totalFiches(ch)-1) slideFiche(curFiche + 1, 1);
+      else if(endDx > 70 && curFiche > 0) slideFiche(curFiche - 1, -1);
+      else springBack();
+    }else if(!locked && Math.abs(endDx) > 60 && Math.abs(endDx) > Math.abs(endDy)){
+      /* pichenette très rapide (aucun touchmove capté) : on anime quand même */
+      if(endDx < 0 && curFiche < totalFiches(ch)-1) slideFiche(curFiche + 1, 1);
+      else if(endDx > 0 && curFiche > 0) slideFiche(curFiche - 1, -1);
+    }
+    dragging = false; locked = false; dx = 0;
   }, {passive:true});
 })();
 

@@ -1,4 +1,4 @@
-# PyQuest 🐍 — v5 · LE CURRICULUM COMPLET
+# PyQuest 🐍 — v5.1 · LE CURRICULUM COMPLET
 
 Apprendre à **lire, comprendre et piloter** le développement Python par IA,
 pour devenir l'architecte/product owner de tes propres apps.
@@ -40,6 +40,12 @@ le critère non couvert d'une livraison. 😉
 ## Progression
 
 Sauvegarde automatique + bouton 💾 (code `PYQ2-...`).
+
+## Nouveau en v5.1
+
+Les fiches suivent ton doigt : glisse pour les entraîner, elles filent sur le côté
+et la suivante arrive en glissant ; relâche trop tôt et la fiche revient
+élastiquement en place. Le bouton « Fiche suivante » est animé pareil.
 
 ## Et après ?
 
