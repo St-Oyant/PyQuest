@@ -1,7 +1,7 @@
 /* PyQuest service worker — rend l'app installable et utilisable hors ligne.
    Stratégie "réseau d'abord" : les mises à jour arrivent dès qu'on est en ligne,
    et le cache prend le relais hors connexion. */
-const CACHE = "pyquest-v5.1";
+const CACHE = "pyquest-v5.2";
 const ASSETS = ["./", "./index.html", "./manifest.json", "./icon-192.png", "./icon-512.png"];
 
 self.addEventListener("install", e => {

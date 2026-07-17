@@ -2229,7 +2229,15 @@ document.getElementById("btn-lesson-next").addEventListener("click", () => {
 })();
 
 /* ==================== QUIZ ==================== */
-let curQ = 0, curScore = 0, answered = false, selectedOpt = null;
+let curQ = 0, curScore = 0, answered = false, selectedOpt = null, optOrder = [];
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i = a.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
 function startQuiz(){
   curQ = 0; curScore = 0;
   renderQuestion(); show("quiz");
@@ -2259,7 +2267,11 @@ function renderQuestion(){
     inp.addEventListener("keydown", e => { if(e.key === "Enter" && !btn.disabled) btn.click(); });
     box.appendChild(inp);
   }else{
-    const options = q.type === "vf" ? ["Vrai ✅","Faux ❌"] : q.opts;
+    /* Ordre des réponses mélangé à chaque affichage (sauf Vrai/Faux) :
+       impossible de répondre de mémoire visuelle ! */
+    let options;
+    if(q.type === "vf"){ optOrder = [0, 1]; options = ["Vrai ✅","Faux ❌"]; }
+    else { optOrder = shuffle(q.opts.map((_, i) => i)); options = optOrder.map(i => q.opts[i]); }
     /* Police uniforme pour TOUTES les réponses d'une même question :
        monospace seulement si la question porte sur du code (type output ou majorité d'options code) */
     const looksCode = o => /[()="'{}\[\]#]/.test(o) || /^[\d\s.+-]+$/.test(o) || /^(True|False)$/.test(o);
@@ -2292,7 +2304,7 @@ document.getElementById("btn-q-action").addEventListener("click", () => {
       document.getElementById("fill-input").style.borderColor = good ? "var(--ok)" : "var(--ko)";
       if(!good) fb.innerHTML = "❌ Pas tout à fait ! La réponse était <code>" + q.answers[0] + "</code>. " + q.exp;
     }else{
-      const correct = q.type === "vf" ? (q.a ? 0 : 1) : q.a;
+      const correct = q.type === "vf" ? (q.a ? 0 : 1) : optOrder.indexOf(q.a);
       good = selectedOpt === correct;
       box.querySelectorAll(".opt").forEach((o,k) => {
         if(k === correct) o.classList.add("good");
